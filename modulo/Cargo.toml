@@ -1,0 +1,8 @@
+[package]
+name = "modulo"
+version = "0.1.0"
+authors = ["Federico Terzi <federicoterzi96@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+modulo-sys = { path = "../modulo-sys" }
