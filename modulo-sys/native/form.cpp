@@ -7,6 +7,10 @@
     #include <wx/wx.h>
 #endif
 
+#include "interop.h"
+
+FormMetadata *metadata = nullptr;
+
 class MyApp: public wxApp
 {
 public:
@@ -61,6 +65,7 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
 
     panel = new wxPanel(this, wxID_ANY);
     control = new wxTextCtrl(panel, wxID_ANY);
+    control->ChangeValue(metadata->text);
     button = new wxButton(panel, ID_Hello, "submit", wxPoint(50,50));
 }
 void MyFrame::OnExit(wxCommandEvent& event)
@@ -79,6 +84,7 @@ void MyFrame::OnHello(wxCommandEvent& event)
                   "About Hello World", wxOK | wxICON_INFORMATION );
 }
 
-extern "C" void show_window() {
+extern "C" void show_window(FormMetadata * _metadata) {
+    metadata = _metadata; 
     wxEntry(0, nullptr);
 }

@@ -12,6 +12,7 @@ build = "build.rs"
 
 [build-dependencies]
 cc = "1.0.58"
+bindgen = "0.54.1"
 
 [target.'cfg(windows)'.build-dependencies]
 winres = "0.1.11"
