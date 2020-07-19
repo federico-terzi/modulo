@@ -17,13 +17,13 @@ fn build_native() {
     }
 
     // Make sure wxWindows is compiled
-    if !wx_path.join("build").join("msw").join("vc_mswu").is_dir() {
-        panic!("wxWidgets is not compiled correctly, missing 'build/msw/vc_mswu' directory")
+    if !wx_path.join("build").join("msw").join("vc_mswu_x64").is_dir() {
+        panic!("wxWidgets is not compiled correctly, missing 'build/msw/vc_mswu_x64' directory")
     }
 
     let wx_include_dir = wx_path.join("include");
     let wx_include_msvc_dir = wx_include_dir.join("msvc");
-    let wx_lib_dir = wx_path.join("lib").join("vc_lib");
+    let wx_lib_dir = wx_path.join("lib").join("vc_x64_lib");
 
     cc::Build::new()
         .cpp(true)
@@ -36,6 +36,7 @@ fn build_native() {
     // Add resources (manifest)
     let mut resources = winres::WindowsResource::new();
     resources.set_manifest(include_str!("res/win.manifest"));
+    resources.compile().expect("unable to compile resource file");
    
     println!("cargo:rustc-link-search=native={}", wx_lib_dir.to_string_lossy());
 }

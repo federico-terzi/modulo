@@ -1,5 +1,3 @@
-// wxWidgets "Hello world" Program
-// For compilers that support precompilation, includes "wx/wx.h".
 #define _UNICODE
 
 #include <wx/wxprec.h>
@@ -9,82 +7,101 @@
 
 #include "interop.h"
 
+#include <vector>
+
+// https://docs.wxwidgets.org/stable/classwx_frame.html
+const long DEFAULT_STYLE = wxSTAY_ON_TOP | wxRESIZE_BORDER | wxCLOSE_BOX | wxCAPTION;
+
 FormMetadata *metadata = nullptr;
 
-class MyApp: public wxApp
+class FormApp: public wxApp
 {
 public:
     virtual bool OnInit();
 };
-class MyFrame: public wxFrame
+class FormFrame: public wxFrame
 {
 public:
-    MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size);
+    FormFrame(const wxString& title, const wxPoint& pos, const wxSize& size);
 
     wxPanel *panel;
-    wxTextCtrl *control;
-    wxButton *button;
+    std::vector<void *> fields;
 private:
-    void OnHello(wxCommandEvent& event);
-    void OnExit(wxCommandEvent& event);
-    void OnAbout(wxCommandEvent& event);
-    wxDECLARE_EVENT_TABLE();
+    // void AddLabel()
+    void OnSubmit(wxCommandEvent& event);
 };
 enum
 {
-    ID_Hello = 1
+    ID_Submit = 1
 };
-wxBEGIN_EVENT_TABLE(MyFrame, wxFrame)
-    EVT_MENU(ID_Hello,   MyFrame::OnHello)
-    EVT_MENU(wxID_EXIT,  MyFrame::OnExit)
-    EVT_MENU(wxID_ABOUT, MyFrame::OnAbout)
-wxEND_EVENT_TABLE()
-wxIMPLEMENT_APP_NO_MAIN(MyApp);
-bool MyApp::OnInit()
+
+wxIMPLEMENT_APP_NO_MAIN(FormApp);
+
+bool FormApp::OnInit()
 {
-    MyFrame *frame = new MyFrame( "Hello World", wxPoint(50, 50), wxSize(450, 340) );
+    FormFrame *frame = new FormFrame(metadata->windowTitle, wxPoint(50, 50), wxSize(450, 340) );
     frame->Show( true );
     return true;
 }
-MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
-        : wxFrame(NULL, wxID_ANY, title, pos, size)
+FormFrame::FormFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
+        : wxFrame(NULL, wxID_ANY, title, pos, size, DEFAULT_STYLE)
 {
-    wxMenu *menuFile = new wxMenu;
-    menuFile->Append(ID_Hello, "&Hello...\tCtrl-H",
-                     "Help string shown in status bar for this menu item");
-    menuFile->AppendSeparator();
-    menuFile->Append(wxID_EXIT);
-    wxMenu *menuHelp = new wxMenu;
-    menuHelp->Append(wxID_ABOUT);
-    wxMenuBar *menuBar = new wxMenuBar;
-    menuBar->Append( menuFile, "&File" );
-    menuBar->Append( menuHelp, "&Help" );
-    SetMenuBar( menuBar );
-    CreateStatusBar();
-    SetStatusText( "Welcome to wxWidgets!" );
-
     panel = new wxPanel(this, wxID_ANY);
-    control = new wxTextCtrl(panel, wxID_ANY);
-    control->ChangeValue(metadata->text);
-    button = new wxButton(panel, ID_Hello, "submit", wxPoint(50,50));
-}
-void MyFrame::OnExit(wxCommandEvent& event)
-{
-    Close( true );
-}
-void MyFrame::OnAbout(wxCommandEvent& event)
-{
-    wxMessageBox( "This is a wxWidgets' Hello world sample",
-                  "About Hello World", wxOK | wxICON_INFORMATION );
-}
-void MyFrame::OnHello(wxCommandEvent& event)
-{
-    wxLogMessage("Hello world from wxWidgets!");
-    wxMessageBox( "This is a wxWidgets' Hello world sample",
-                  "About Hello World", wxOK | wxICON_INFORMATION );
+    wxBoxSizer *vbox = new wxBoxSizer(wxVERTICAL);
+    panel->SetSizer(vbox);
+
+    for (int field = 0; field < metadata->fieldSize; field++) {
+        FieldMetadata meta = metadata->fields[field];
+
+        switch (meta.fieldType) {
+            case FieldType::LABEL:
+            {
+                const LabelMetadata *label_meta = static_cast<const LabelMetadata*>(meta.specific);
+                printf("%s\n", label_meta->text);
+                // TODO: make a function to change the parent component
+                auto label = new wxStaticText(panel, wxID_ANY, label_meta->text, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+                vbox->Add(label, 1, wxEXPAND | wxALL, 10);
+                fields.push_back(label);
+                break;
+            }
+            default:
+                // TODO: handle unknown field type
+                break;
+        }
+    }
+
+    //innerPanel = new wxPanel(panel, wxID_ANY);
+    //wxBoxSizer *hbox = new wxBoxSizer(wxHORIZONTAL);
+    //wxBoxSizer *vbox = new wxBoxSizer(wxVERTICAL);
+
+    //label = new wxStaticText(innerPanel, wxID_ANY, "test label", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+    //control = new wxTextCtrl(innerPanel, wxID_ANY);
+    //control->ChangeValue(metadata->text);
+    //button = new wxButton(panel, ID_Submit, "submit");
+
+    
+    //hbox->Add(label, 1, wxEXPAND | wxALL, 0);
+    //hbox->Add(control, 1, wxEXPAND | wxALL, 0);
+    //innerPanel->SetSizer(hbox);
+
+    //vbox->Add(innerPanel, 1, wxEXPAND | wxALL, 10);
+    //vbox->Add(button, 1, wxEXPAND | wxALL, 10);
+    
+
+    Bind(wxEVT_BUTTON, &FormFrame::OnSubmit, this, ID_Submit);
+    // TODO: register ESC click handler: https://forums.wxwidgets.org/viewtopic.php?t=41926
+
+    this->SetClientSize(panel->GetBestSize());
 }
 
-extern "C" void show_window(FormMetadata * _metadata) {
-    metadata = _metadata; 
+void FormFrame::OnSubmit(wxCommandEvent &event) {
+    // TODO: collect all form data
+
+    Close(true);
+}
+
+extern "C" void interop_show_form(FormMetadata * _metadata) {
+    SetProcessDPIAware();
+    metadata = _metadata;
     wxEntry(0, nullptr);
 }
