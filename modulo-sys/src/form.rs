@@ -27,7 +27,9 @@ pub mod types {
         pub fn row(fields: Vec<Field>) -> Self {
             Self {
                 id: None,
-                field_type: FieldType::Row(fields),
+                field_type: FieldType::Row(RowMetadata {
+                    fields
+                }),
             }
         }
 
@@ -39,12 +41,25 @@ pub mod types {
                 }),
             }
         }
+
+        pub fn text(id: &str, default_text: &str) -> Self {
+            Self {
+                id: Some(id.to_owned()),
+                field_type: FieldType::Text(TextMetadata {
+                    default_text: default_text.to_owned(),
+                }),
+            }
+        }
     }
 
     pub enum FieldType {
-        Row(Vec<Field>),
+        Row(RowMetadata),
         Label(LabelMetadata),
         Text(TextMetadata),
+    }
+
+    pub struct RowMetadata {
+        pub fields: Vec<Field>,
     }
 
     pub struct LabelMetadata {
@@ -69,20 +84,21 @@ mod interop {
     use std::ptr::null;
     use super::types;
 
-    trait Interoperable {
+    pub(crate) trait Interoperable {
         fn as_ptr(&self) -> *const c_void;
     }
 
-    struct OwnedForm {
+    pub(crate) struct OwnedForm {
         title: CString,
         fields: Vec<OwnedField>,
-        fields_ptr: Vec<*const c_void>,
-        interop: Box<FormMetadata>,
+
+        _metadata: Vec<FieldMetadata>,
+        _interop: Box<FormMetadata>,
     }
 
     impl Interoperable for OwnedForm {
         fn as_ptr(&self) -> *const c_void {
-            &(*self.interop) as *const FormMetadata as *const c_void
+            &(*self._interop) as *const FormMetadata as *const c_void
         }
     }
 
@@ -93,21 +109,21 @@ mod interop {
                 field.into()
             }).collect();
 
-            let fields_ptr: Vec<*const c_void> = fields.iter().map(|field| {
-                field.as_ptr()
+            let _metadata: Vec<FieldMetadata> = fields.iter().map(|field| {
+                field.metadata()
             }).collect();
 
-            let interop = Box::new(FormMetadata {
+            let _interop = Box::new(FormMetadata {
                 windowTitle: title.as_ptr(),
-                fields: fields_ptr.as_ptr(),
+                fields: _metadata.as_ptr(),
                 fieldSize: fields.len() as c_int,
             });
 
             Self {
                 title,
                 fields,
-                fields_ptr,
-                interop,
+                _metadata,
+                _interop,
             }
         }
     }
@@ -116,13 +132,6 @@ mod interop {
         id: Option<CString>,
         field_type: FieldType,
         specific: Box<dyn Interoperable>,
-        interop: Box<FieldMetadata>,
-    }
-
-    impl Interoperable for OwnedField {
-        fn as_ptr(&self) -> *const c_void {
-            &(*self.interop) as *const FieldMetadata as *const c_void
-        }
     }
 
     impl From<types::Field> for OwnedField {
@@ -134,81 +143,151 @@ mod interop {
             };
 
             let field_type = match field.field_type {
-                types::FieldType::Row(_) => {todo!()}
+                types::FieldType::Row(_) => {
+                    FieldType_ROW
+                }
                 types::FieldType::Label(_) => {
                     FieldType_LABEL
                 },
-                types::FieldType::Text(_) => {todo!()}
+                types::FieldType::Text(_) => {
+                    FieldType_TEXT
+                }
             };
 
-            let id_ptr = if let Some(id) = id.as_ref() {
-                id.as_ptr()
-            }else{
-                null()
-            };
-
-            let specific = match field.field_type {
-                types::FieldType::Row(_) => {todo!()}
+            // TODO: clean up this match
+            let specific: Box<dyn Interoperable> = match field.field_type {
+                types::FieldType::Row(metadata) => {
+                    let owned_metadata: OwnedRowMetadata = metadata.into();
+                    Box::new(owned_metadata)
+                }
                 types::FieldType::Label(metadata) => {
                     let owned_metadata: OwnedLabelMetadata = metadata.into();
                     Box::new(owned_metadata)
                 }
-                types::FieldType::Text(_) => {todo!()}
+                types::FieldType::Text(metadata) => {
+                    let owned_metadata: OwnedTextMetadata = metadata.into();
+                    Box::new(owned_metadata)
+                }
             };
-
-            let interop = Box::new(FieldMetadata {
-                id: id_ptr,
-                fieldType: field_type,
-                specific: &(*specific) as *const dyn Interoperable as *const c_void,
-            });
 
             Self {
                 id,
                 field_type,
                 specific,
-                interop,
+            }
+        }
+    }
+
+    impl OwnedField {
+        pub fn metadata(&self) -> FieldMetadata {
+            let id_ptr = if let Some(id) = self.id.as_ref() {
+                id.as_ptr()
+            }else{
+                null()
+            };
+
+            FieldMetadata {
+                id: id_ptr,
+                fieldType: self.field_type,
+                specific: self.specific.as_ptr(),
             }
         }
     }
 
     struct OwnedLabelMetadata {
         text: CString,
-        interop: Box<LabelMetadata>,
+        _interop: Box<LabelMetadata>,
     }
 
     impl Interoperable for OwnedLabelMetadata {
         fn as_ptr(&self) -> *const c_void {
-            &(*self.interop) as *const LabelMetadata as *const c_void
+            &(*self._interop) as *const LabelMetadata as *const c_void
         }
     }
 
     impl From<types::LabelMetadata> for OwnedLabelMetadata {
         fn from(label_metadata: types::LabelMetadata) -> Self {
             let text = CString::new(label_metadata.text).expect("unable to convert label text to CString");
-            let interop = Box::new(LabelMetadata {
+            let _interop = Box::new(LabelMetadata {
                 text: text.as_ptr(),
             });
             Self {
                 text,
-                interop,
+                _interop,
+            }
+        }
+    }
+
+    struct OwnedTextMetadata {
+        default_text: CString,
+        _interop: Box<TextMetadata>,
+    }
+
+    impl Interoperable for OwnedTextMetadata {
+        fn as_ptr(&self) -> *const c_void {
+            &(*self._interop) as *const TextMetadata as *const c_void
+        }
+    }
+
+    impl From<types::TextMetadata> for OwnedTextMetadata {
+        fn from(text_metadata: types::TextMetadata) -> Self {
+            let default_text = CString::new(text_metadata.default_text).expect("unable to convert default text to CString");
+            let _interop = Box::new(TextMetadata {
+                defaultText: default_text.as_ptr(),
+            });
+            Self {
+                default_text,
+                _interop,
+            }
+        }
+    }
+
+    struct OwnedRowMetadata {
+        fields: Vec<OwnedField>,
+
+        _metadata: Vec<FieldMetadata>,
+        _interop: Box<RowMetadata>,
+    }
+
+    impl Interoperable for OwnedRowMetadata {
+        fn as_ptr(&self) -> *const c_void {
+            &(*self._interop) as *const RowMetadata as *const c_void
+        }
+    }
+
+    impl From<types::RowMetadata> for OwnedRowMetadata {
+        fn from(row_metadata: types::RowMetadata) -> Self {
+            let fields: Vec<OwnedField> = row_metadata.fields.into_iter().map(|field| {
+                field.into()
+            }).collect();
+
+            let _metadata: Vec<FieldMetadata> = fields.iter().map(|field| {
+                field.metadata()
+            }).collect();
+
+            let _interop = Box::new(RowMetadata {
+                fields: _metadata.as_ptr(),
+                fieldSize: _metadata.len() as c_int,
+            });
+
+            Self {
+                fields,
+                _metadata,
+                _interop,
             }
         }
     }
 }
 
 pub fn show(form: types::Form) {
+    use interop::Interoperable;
+    
     unsafe {
-        let title = CString::new(form.title).unwrap();
-        
-        
+        let owned_form: interop::OwnedForm = form.into();
+        let metadata: *const FormMetadata = owned_form.as_ptr() as *const FormMetadata;
 
         // TODO: Nested rows should fail, add check
-        let metadata = FormMetadata {
-            windowTitle: title.as_ptr(),
-            fields: null(),
-            fieldSize: 0,
-        };
 
-        interop_show_form(&metadata);
+        interop_show_form(metadata);
     }
 }

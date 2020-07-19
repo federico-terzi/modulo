@@ -11,6 +11,10 @@ typedef struct LabelMetadata {
   const char *text;
 } LabelMetadata;
 
+typedef struct TextMetadata {
+  const char *defaultText;
+} TextMetadata;
+
 typedef struct FieldMetadata {
   const char * id;
   FieldType fieldType;

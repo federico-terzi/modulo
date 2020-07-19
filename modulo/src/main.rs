@@ -5,11 +5,12 @@ fn main() {
     modulo_sys::form::show(Form {
         title: "test title".to_owned(),
         fields: vec![
-            // Field::row(vec![
-            //     Field::label("test label"),
-            //     Field::label("another label"),
-            // ]),
+            Field::row(vec![
+                Field::label("test label"),
+                Field::text("name", ""),
+            ]),
             Field::label("third label"),
+            Field::text("greetings", "Best Regards"),
         ],
     })
 }
