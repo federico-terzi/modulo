@@ -8,6 +8,7 @@
 #include "interop.h"
 
 #include <vector>
+#include <memory>
 #include <unordered_map>
 
 // https://docs.wxwidgets.org/stable/classwx_frame.html
@@ -16,6 +17,26 @@ const long DEFAULT_STYLE = wxSTAY_ON_TOP | wxRESIZE_BORDER | wxCLOSE_BOX | wxCAP
 const int PADDING = 5;
 
 FormMetadata *metadata = nullptr;
+std::vector<ValuePair> values;
+
+// Field Wrappers
+
+class FieldWrapper {
+public:
+    virtual wxString getValue() = 0;
+};
+
+class TextFieldWrapper {
+    wxTextCtrl * control;
+public:
+    explicit TextFieldWrapper(wxTextCtrl * control): control(control) {}
+
+    virtual wxString getValue() {
+        return control->GetValue();
+    }
+};
+
+// App Code
 
 class FormApp: public wxApp
 {
@@ -29,15 +50,16 @@ public:
 
     wxPanel *panel;
     std::vector<void *> fields;
-    std::unordered_map<const char *, void *> idMap;
+    std::unordered_map<const char *, std::unique_ptr<FieldWrapper>> idMap;
     wxButton *submit;
 private:
     void AddComponent(wxPanel *parent, wxBoxSizer *sizer, FieldMetadata meta);
     void OnSubmit(wxCommandEvent& event);
+    void OnEscape(wxKeyEvent& event);
 };
 enum
 {
-    ID_Submit = 1
+    ID_Submit = 20000
 };
 
 wxIMPLEMENT_APP_NO_MAIN(FormApp);
@@ -60,30 +82,40 @@ FormFrame::FormFrame(const wxString& title, const wxPoint& pos, const wxSize& si
         AddComponent(panel, vbox, meta);
     }
 
-    //innerPanel = new wxPanel(panel, wxID_ANY);
-    //wxBoxSizer *hbox = new wxBoxSizer(wxHORIZONTAL);
-    //wxBoxSizer *vbox = new wxBoxSizer(wxVERTICAL);
-
-    //label = new wxStaticText(innerPanel, wxID_ANY, "test label", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
-    //control = new wxTextCtrl(innerPanel, wxID_ANY);
-    //control->ChangeValue(metadata->text);
     submit = new wxButton(panel, ID_Submit, "Submit");
     vbox->Add(submit, 1, wxEXPAND | wxALL, PADDING);
 
     Bind(wxEVT_BUTTON, &FormFrame::OnSubmit, this, ID_Submit);
+    Bind(wxEVT_CHAR_HOOK, &FormFrame::OnEscape, this, wxID_ANY);
     // TODO: register ESC click handler: https://forums.wxwidgets.org/viewtopic.php?t=41926
 
     this->SetClientSize(panel->GetBestSize());
+    this->CentreOnScreen();
 }
 
 void FormFrame::AddComponent(wxPanel *parent, wxBoxSizer *sizer, FieldMetadata meta) {
+    void * control = nullptr;
+
     switch (meta.fieldType) {
         case FieldType::LABEL:
         {
             const LabelMetadata *labelMeta = static_cast<const LabelMetadata*>(meta.specific);
             auto label = new wxStaticText(parent, wxID_ANY, labelMeta->text, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
-            sizer->Add(label, 1, wxEXPAND | wxALL, PADDING);
+            control = label;
             fields.push_back(label);
+            break;
+        }
+        case FieldType::TEXT:
+        {
+            const TextMetadata *textMeta = static_cast<const TextMetadata*>(meta.specific);
+            auto textControl = new wxTextCtrl(parent, NewControlId());
+            textControl->ChangeValue(textMeta->defaultText);
+            
+            // Create the field wrapper
+            std::unique_ptr<FieldWrapper> field((FieldWrapper*) new TextFieldWrapper(textControl));
+            idMap[meta.id] = std::move(field);
+            control = textControl;
+            fields.push_back(textControl);
             break;
         }
         case FieldType::ROW:
@@ -103,29 +135,50 @@ void FormFrame::AddComponent(wxPanel *parent, wxBoxSizer *sizer, FieldMetadata m
 
             break;
         }
-        case FieldType::TEXT:
-        {
-            const TextMetadata *textMeta = static_cast<const TextMetadata*>(meta.specific);
-            auto textControl = new wxTextCtrl(parent, NewControlId());
-            textControl->ChangeValue(textMeta->defaultText);
-            idMap[meta.id] = textControl;
-            sizer->Add(textControl, 1, wxEXPAND | wxALL, PADDING);
-            fields.push_back(textControl);
-        }
         default:
             // TODO: handle unknown field type
             break;
     }
+
+    if (control) {
+        sizer->Add((wxWindow*) control, meta.weight, wxEXPAND | wxALL, PADDING);
+    }
 }
 
 void FormFrame::OnSubmit(wxCommandEvent &event) {
-    // TODO: collect all form data
+    for (auto& field: idMap) {
+        FieldWrapper * fieldWrapper = (FieldWrapper*) field.second.get();
+        wxString value {fieldWrapper->getValue()};
+        wxCharBuffer buffer {value.ToUTF8()};
+        char * id = strdup(field.first);
+        char * c_value = strdup(buffer.data());
+        ValuePair valuePair = {
+            id,
+            c_value,
+        };
+        values.push_back(valuePair);
+    }
 
     Close(true);
 }
 
-extern "C" void interop_show_form(FormMetadata * _metadata) {
+void FormFrame::OnEscape(wxKeyEvent& event) {
+    if (event.GetKeyCode() == WXK_ESCAPE) {
+        Close(true);
+    }else{
+        event.Skip();
+    }
+}
+
+extern "C" void interop_show_form(FormMetadata * _metadata, void (*callback)(ValuePair *values, int size, void *data), void *data) {
     SetProcessDPIAware();
     metadata = _metadata;
     wxEntry(0, nullptr);
+    callback(values.data(), values.size(), data);
+
+    // Free up values
+    for (auto pair: values) {
+        free((void*) pair.id);
+        free((void*) pair.value);
+    }
 }

@@ -17,6 +17,7 @@ typedef struct TextMetadata {
 
 typedef struct FieldMetadata {
   const char * id;
+  const int weight;
   FieldType fieldType;
   const void * specific;
 } FieldMetadata;
@@ -31,3 +32,8 @@ typedef struct FormMetadata {
   const FieldMetadata *fields;
   const int fieldSize;
 } FormMetadata;
+
+typedef struct ValuePair {
+  const char *id;
+  const char *value;
+} ValuePair;

@@ -1,13 +1,14 @@
 use interop::FormMetadata;
-use std::ffi::CString;
-use std::ptr::null;
+use std::ffi::{CStr, CString};
+use std::os::raw::c_int;
+use std::{collections::HashMap, ptr::null};
 
 // Native bindings
 
 #[allow(improper_ctypes)]
 #[link(name = "modulosys", kind = "static")]
 extern "C" {
-    fn interop_show_form(metadata: *const FormMetadata);
+    fn interop_show_form(metadata: *const FormMetadata, callback: extern fn (values: *const interop::ValuePair, size: c_int, map: *mut HashMap<String, String>), map: *mut HashMap<String, String>);
 }
 
 // Form schema
@@ -20,39 +21,22 @@ pub mod types {
 
     pub struct Field {
         pub id: Option<String>,
+        pub weight: i32,
         pub field_type: FieldType,
     }
 
-    impl Field {
-        pub fn row(fields: Vec<Field>) -> Self {
+    impl Default for Field {
+        fn default() -> Self {
             Self {
                 id: None,
-                field_type: FieldType::Row(RowMetadata {
-                    fields
-                }),
-            }
-        }
-
-        pub fn label(text: &str) -> Self {
-            Self {
-                id: None,
-                field_type: FieldType::Label(LabelMetadata {
-                    text: text.to_owned(),
-                }),
-            }
-        }
-
-        pub fn text(id: &str, default_text: &str) -> Self {
-            Self {
-                id: Some(id.to_owned()),
-                field_type: FieldType::Text(TextMetadata {
-                    default_text: default_text.to_owned(),
-                }),
-            }
+                weight: 1,
+                field_type: FieldType::Unknown,
+            }   
         }
     }
 
     pub enum FieldType {
+        Unknown,
         Row(RowMetadata),
         Label(LabelMetadata),
         Text(TextMetadata),
@@ -131,6 +115,7 @@ mod interop {
     struct OwnedField {
         id: Option<CString>,
         field_type: FieldType,
+        weight: i32,
         specific: Box<dyn Interoperable>,
     }
 
@@ -152,6 +137,9 @@ mod interop {
                 types::FieldType::Text(_) => {
                     FieldType_TEXT
                 }
+                types::FieldType::Unknown => {
+                    panic!("unknown field type")
+                }
             };
 
             // TODO: clean up this match
@@ -168,12 +156,16 @@ mod interop {
                     let owned_metadata: OwnedTextMetadata = metadata.into();
                     Box::new(owned_metadata)
                 }
+                types::FieldType::Unknown => {
+                    panic!("unknown field type")
+                }
             };
 
             Self {
                 id,
                 field_type,
                 specific,
+                weight: field.weight,
             }
         }
     }
@@ -189,6 +181,7 @@ mod interop {
             FieldMetadata {
                 id: id_ptr,
                 fieldType: self.field_type,
+                weight: self.weight,
                 specific: self.specific.as_ptr(),
             }
         }
@@ -282,12 +275,30 @@ mod interop {
 pub fn show(form: types::Form) {
     use interop::Interoperable;
     
+    let owned_form: interop::OwnedForm = form.into();
+    let metadata: *const FormMetadata = owned_form.as_ptr() as *const FormMetadata;
+
+    let mut value_map: HashMap<String, String> = HashMap::new();
+
+    extern fn callback(values: *const interop::ValuePair, size: c_int, map: *mut HashMap<String, String>) {
+        let values: &[interop::ValuePair] = unsafe {std::slice::from_raw_parts(values, size as usize)};
+        let map = unsafe { &mut (*map) };
+        for pair in values.iter() {
+            unsafe {
+                let id = CStr::from_ptr(pair.id);
+                let value = CStr::from_ptr(pair.value);
+
+                let id = id.to_string_lossy().to_string();
+                let value = value.to_string_lossy().to_string();
+                map.insert(id, value);
+            }            
+        }
+    }
+
     unsafe {
-        let owned_form: interop::OwnedForm = form.into();
-        let metadata: *const FormMetadata = owned_form.as_ptr() as *const FormMetadata;
-
         // TODO: Nested rows should fail, add check
+        interop_show_form(metadata, callback, &mut value_map as *mut HashMap<String, String>);
 
-        interop_show_form(metadata);
+        println!("{:?}", value_map);
     }
 }
