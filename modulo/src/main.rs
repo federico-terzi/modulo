@@ -1,39 +1,25 @@
+#[macro_use]
+extern crate lazy_static;
+
 use modulo_sys::form::types::*;
 
+mod parser;
+mod generator;
+
 fn main() {
-    println!("Hello, world!");
-    modulo_sys::form::show(Form {
-        title: "test title".to_owned(),
-        fields: vec![
-            Field {
-                field_type: FieldType::Row(RowMetadata {
-                    fields: vec![
-                        Field {
-                            field_type: FieldType::Label(LabelMetadata {
-                                text: "Hey".to_owned(),
-                            }),
-                            weight: 1,
-                            ..Default::default()
-                        },
-                        Field {
-                            id: Some("name".to_owned()),
-                            weight: 7,
-                            field_type: FieldType::Text(TextMetadata {
-                                default_text: "name".to_owned()
-                            }),
-                            ..Default::default()
-                        }
-                    ]
-                }),
-                ..Default::default()
-            },
-            Field {
-                id: Some("message".to_owned()),
-                field_type: FieldType::Text(TextMetadata {
-                    default_text: "".to_owned()
-                }),
-                ..Default::default()
-            }
-        ],
-    })
+    let layout = r#"
+Hey {{name}},
+{{message}}
+
+Looking forward to hearing from you!
+
+By the way, have you checked out {{website}}?
+
+Cheers :)
+    "#;
+
+    let structure = parser::layout::parse_layout(layout);
+    let form = generator::generate(structure);
+
+    modulo_sys::form::show(form)
 }

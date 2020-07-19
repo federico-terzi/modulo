@@ -17,7 +17,6 @@ typedef struct TextMetadata {
 
 typedef struct FieldMetadata {
   const char * id;
-  const int weight;
   FieldType fieldType;
   const void * specific;
 } FieldMetadata;

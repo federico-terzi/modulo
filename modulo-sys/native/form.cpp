@@ -100,7 +100,7 @@ void FormFrame::AddComponent(wxPanel *parent, wxBoxSizer *sizer, FieldMetadata m
         case FieldType::LABEL:
         {
             const LabelMetadata *labelMeta = static_cast<const LabelMetadata*>(meta.specific);
-            auto label = new wxStaticText(parent, wxID_ANY, labelMeta->text, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+            auto label = new wxStaticText(parent, wxID_ANY, labelMeta->text, wxDefaultPosition, wxDefaultSize);
             control = label;
             fields.push_back(label);
             break;
@@ -141,7 +141,7 @@ void FormFrame::AddComponent(wxPanel *parent, wxBoxSizer *sizer, FieldMetadata m
     }
 
     if (control) {
-        sizer->Add((wxWindow*) control, meta.weight, wxEXPAND | wxALL, PADDING);
+        sizer->Add((wxWindow*) control, 0, wxEXPAND | wxALL, PADDING);
     }
 }
 

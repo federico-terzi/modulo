@@ -1,7 +1,7 @@
 use interop::FormMetadata;
-use std::ffi::{CStr, CString};
+use std::ffi::CStr;
 use std::os::raw::c_int;
-use std::{collections::HashMap, ptr::null};
+use std::collections::HashMap;
 
 // Native bindings
 
@@ -14,14 +14,15 @@ extern "C" {
 // Form schema
 
 pub mod types {
+    #[derive(Debug)]
     pub struct Form {
         pub title: String,
         pub fields: Vec<Field>,
     }
 
+    #[derive(Debug)]
     pub struct Field {
         pub id: Option<String>,
-        pub weight: i32,
         pub field_type: FieldType,
     }
 
@@ -29,12 +30,12 @@ pub mod types {
         fn default() -> Self {
             Self {
                 id: None,
-                weight: 1,
                 field_type: FieldType::Unknown,
             }   
         }
     }
 
+    #[derive(Debug)]
     pub enum FieldType {
         Unknown,
         Row(RowMetadata),
@@ -42,14 +43,17 @@ pub mod types {
         Text(TextMetadata),
     }
 
+    #[derive(Debug)]
     pub struct RowMetadata {
         pub fields: Vec<Field>,
     }
 
+    #[derive(Debug)]
     pub struct LabelMetadata {
         pub text: String,
     }
 
+    #[derive(Debug)]
     pub struct TextMetadata {
         pub default_text: String,
     }
@@ -57,6 +61,7 @@ pub mod types {
 
 // Form interop
 
+#[allow(dead_code)]
 mod interop {
     #![allow(non_upper_case_globals)]
     #![allow(non_camel_case_types)]
@@ -115,7 +120,6 @@ mod interop {
     struct OwnedField {
         id: Option<CString>,
         field_type: FieldType,
-        weight: i32,
         specific: Box<dyn Interoperable>,
     }
 
@@ -165,7 +169,6 @@ mod interop {
                 id,
                 field_type,
                 specific,
-                weight: field.weight,
             }
         }
     }
@@ -181,7 +184,6 @@ mod interop {
             FieldMetadata {
                 id: id_ptr,
                 fieldType: self.field_type,
-                weight: self.weight,
                 specific: self.specific.as_ptr(),
             }
         }
