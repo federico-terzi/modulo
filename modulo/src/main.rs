@@ -21,7 +21,7 @@ fn main() {
       message:
         multiline: true
       end:
-        type: list
+        type: choice
         values:
           - "Looking forward to hearing from you"
           - "Let me know what you think"

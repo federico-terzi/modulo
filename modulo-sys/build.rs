@@ -1,5 +1,5 @@
 use regex::Regex;
-use std::path::PathBuf;
+use std::path::{PathBuf, Path};
 
 // TODO: add documentation for windows compile
 // Go to %WXWIN%/build/msw
@@ -68,18 +68,7 @@ fn build_native() {
     }
 
     let config_path = wx_path.join("build-cocoa").join("wx-config");
-    let config_output = std::process::Command::new(&config_path)
-        .arg("--cxxflags")
-        .output()
-        .expect("unable to execute wx-config");
-    let config_libs = String::from_utf8(config_output.stdout).expect("unable to parse wx-config output");
-    let cpp_flags: Vec<String> = config_libs.split(" ").into_iter().filter_map(|s| {
-        if !s.trim().is_empty() {
-            Some(s.trim().to_owned())
-        }else{
-            None
-        }
-    }).collect();
+    let cpp_flags = get_cpp_flags(&config_path);
 
     let mut build = cc::Build::new();
     build.cpp(true).file("native/form.cpp");
@@ -93,7 +82,36 @@ fn build_native() {
 
     // Render linker flags
 
-    let config_output = std::process::Command::new(&config_path)
+    generate_linker_flags(&config_path);
+
+    // On (older) OSX we need to link against the clang runtime,
+    // which is hidden in some non-default path.
+    //
+    // More details at https://github.com/alexcrichton/curl-rust/issues/279.
+    if let Some(path) = macos_link_search_path() {
+        println!("cargo:rustc-link-lib=clang_rt.osx");
+        println!("cargo:rustc-link-search={}", path);
+    }
+}
+
+fn get_cpp_flags(wx_config_path: &Path) -> Vec<String> {
+    let config_output = std::process::Command::new(&wx_config_path)
+        .arg("--cxxflags")
+        .output()
+        .expect("unable to execute wx-config");
+    let config_libs = String::from_utf8(config_output.stdout).expect("unable to parse wx-config output");
+    let cpp_flags: Vec<String> = config_libs.split(" ").into_iter().filter_map(|s| {
+        if !s.trim().is_empty() {
+            Some(s.trim().to_owned())
+        }else{
+            None
+        }
+    }).collect();
+    cpp_flags
+}
+
+fn generate_linker_flags(wx_config_path: &Path) {
+    let config_output = std::process::Command::new(&wx_config_path)
         .arg("--libs")
         .output()
         .expect("unable to execute wx-config libs");
@@ -125,19 +143,10 @@ fn build_native() {
             println!("cargo:rustc-link-lib=dylib={}", libname);
         }
     }
-
-
-    // On (older) OSX we need to link against the clang runtime,
-    // which is hidden in some non-default path.
-    //
-    // More details at https://github.com/alexcrichton/curl-rust/issues/279.
-    if let Some(path) = macos_link_search_path() {
-        println!("cargo:rustc-link-lib=clang_rt.osx");
-        println!("cargo:rustc-link-search={}", path);
-    }
 }
 
 // Taken from curl-rust: https://github.com/alexcrichton/curl-rust/pull/283/files
+#[cfg(target_os = "macos")]
 fn macos_link_search_path() -> Option<String> {
     let output = std::process::Command::new("clang")
         .arg("--print-search-dirs")
@@ -160,6 +169,38 @@ fn macos_link_search_path() -> Option<String> {
 
     println!("failed to determine link search path, continuing without it");
     None
+}
+
+// TODO: add documentation for linux
+// Install LLVM:
+// sudo apt install clang
+// Install wxWidgets:
+// sudo apt install libwxgtk3.0-0v5 libwxgtk3.0-dev
+// 
+// cargo run
+#[cfg(target_os = "linux")]
+fn build_native() {
+    // Make sure wxWidgets is installed
+    if !std::process::Command::new("wx-config").arg("--version").output().is_ok() {
+        panic!("wxWidgets is not installed, as `wx-config` cannot be exectued")
+    }
+
+    let config_path = PathBuf::from("wx-config");
+    let cpp_flags = get_cpp_flags(&config_path);
+
+    let mut build = cc::Build::new();
+    build.cpp(true).file("native/form.cpp");
+    build.flag("-std=c++17");
+
+    for flag in cpp_flags {
+        build.flag(&flag);
+    }
+
+    build.compile("modulosys");
+
+    // Render linker flags
+
+    generate_linker_flags(&config_path);
 }
 
 fn generate_bindings() {
