@@ -1,25 +1,38 @@
-#[macro_use]
-extern crate lazy_static;
-
-use modulo_sys::form::types::*;
+#[macro_use] extern crate lazy_static;
 
 mod parser;
+mod config;
 mod generator;
 
 fn main() {
-    let layout = r#"
-Hey {{name}},
-{{message}}
+    let data = r#"
+    layout: |
+      Hey {{name}},
+      {{message}}
 
-Looking forward to hearing from you!
+      Looking forward to hearing from you!
 
-By the way, have you checked out {{website}}?
+      {{end}}
 
-Cheers :)
+      Cheers :)
+    fields:
+      name:
+        default: "John"
+      message:
+        multiline: true
+      end:
+        type: list
+        values:
+          - "Looking forward to hearing from you"
+          - "Let me know what you think"
+          - "Let me know if that helps"
+          - "Thanks for the help!"
     "#;
 
-    let structure = parser::layout::parse_layout(layout);
-    let form = generator::generate(structure);
+    let config: config::FormConfig = serde_yaml::from_str(data).unwrap(); // TODO: remove unwrap
+    let form = generator::generate(config);
+    let values = modulo_sys::form::show(form);
 
-    modulo_sys::form::show(form)
+    let output = serde_json::to_string(&values).expect("unable to encode values as JSON");
+    println!("{}", output);
 }

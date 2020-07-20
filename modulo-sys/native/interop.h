@@ -2,7 +2,6 @@ typedef enum FieldType {
   ROW,
   LABEL,
   TEXT,
-  MULTILINE_TEXT,
   CHOICE,
   CHECKBOX,
 } FieldType;
@@ -13,7 +12,19 @@ typedef struct LabelMetadata {
 
 typedef struct TextMetadata {
   const char *defaultText;
+  const int multiline;
 } TextMetadata;
+
+typedef enum ChoiceType {
+  DROPDOWN,
+  LIST,
+} ChoiceType;
+
+typedef struct ChoiceMetadata {
+  const char * const * values;
+  const int valueSize;
+  const ChoiceType choiceType;
+} ChoiceMetadata;
 
 typedef struct FieldMetadata {
   const char * id;

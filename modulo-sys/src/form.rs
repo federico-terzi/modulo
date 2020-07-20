@@ -41,6 +41,7 @@ pub mod types {
         Row(RowMetadata),
         Label(LabelMetadata),
         Text(TextMetadata),
+        Choice(ChoiceMetadata),
     }
 
     #[derive(Debug)]
@@ -56,6 +57,19 @@ pub mod types {
     #[derive(Debug)]
     pub struct TextMetadata {
         pub default_text: String,
+        pub multiline: bool,
+    }
+
+    #[derive(Debug)]
+    pub enum ChoiceType {
+        Dropdown,
+        List,
+    }
+
+    #[derive(Debug)]
+    pub struct ChoiceMetadata {
+        pub values: Vec<String>,
+        pub choice_type: ChoiceType,
     }
 }
 
@@ -69,7 +83,7 @@ mod interop {
     include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
     use std::ffi::{CString, c_void};
-    use std::os::raw::c_int;
+    use std::os::raw::{c_int, c_char};
     use std::ptr::null;
     use super::types;
 
@@ -140,7 +154,10 @@ mod interop {
                 },
                 types::FieldType::Text(_) => {
                     FieldType_TEXT
-                }
+                },
+                types::FieldType::Choice(_) => {
+                    FieldType_CHOICE
+                },
                 types::FieldType::Unknown => {
                     panic!("unknown field type")
                 }
@@ -158,6 +175,10 @@ mod interop {
                 }
                 types::FieldType::Text(metadata) => {
                     let owned_metadata: OwnedTextMetadata = metadata.into();
+                    Box::new(owned_metadata)
+                }
+                types::FieldType::Choice(metadata) => {
+                    let owned_metadata: OwnedChoiceMetadata = metadata.into();
                     Box::new(owned_metadata)
                 }
                 types::FieldType::Unknown => {
@@ -229,9 +250,54 @@ mod interop {
             let default_text = CString::new(text_metadata.default_text).expect("unable to convert default text to CString");
             let _interop = Box::new(TextMetadata {
                 defaultText: default_text.as_ptr(),
+                multiline: if text_metadata.multiline { 1 } else { 0 }, 
             });
             Self {
                 default_text,
+                _interop,
+            }
+        }
+    }
+
+    struct OwnedChoiceMetadata {
+        values: Vec<CString>,
+        values_ptr_array: Vec<*const c_char>,
+        _interop: Box<ChoiceMetadata>,
+    }
+
+    impl Interoperable for OwnedChoiceMetadata {
+        fn as_ptr(&self) -> *const c_void {
+            &(*self._interop) as *const ChoiceMetadata as *const c_void
+        }
+    }
+
+    impl From<types::ChoiceMetadata> for OwnedChoiceMetadata {
+        fn from(metadata: types::ChoiceMetadata) -> Self {
+            let values: Vec<CString> = metadata.values.into_iter().map(|value| {
+                CString::new(value).expect("unable to convert choice value to string")
+            }).collect();
+
+            let values_ptr_array: Vec<*const c_char> = values.iter().map(|value| {
+                value.as_ptr()
+            }).collect();
+
+            let choice_type = match metadata.choice_type {
+                types::ChoiceType::Dropdown => {
+                    ChoiceType_DROPDOWN
+                }
+                types::ChoiceType::List => {
+                    ChoiceType_LIST
+                }
+            };
+
+            let _interop = Box::new(ChoiceMetadata {
+                values: values_ptr_array.as_ptr(),
+                valueSize: values.len() as c_int,
+                choiceType: choice_type,
+            });
+            Self {
+                values,
+                values_ptr_array,
                 _interop,
             }
         }
@@ -274,7 +340,7 @@ mod interop {
     }
 }
 
-pub fn show(form: types::Form) {
+pub fn show(form: types::Form) -> HashMap<String, String> {
     use interop::Interoperable;
     
     let owned_form: interop::OwnedForm = form.into();
@@ -300,7 +366,7 @@ pub fn show(form: types::Form) {
     unsafe {
         // TODO: Nested rows should fail, add check
         interop_show_form(metadata, callback, &mut value_map as *mut HashMap<String, String>);
-
-        println!("{:?}", value_map);
     }
+
+    value_map
 }

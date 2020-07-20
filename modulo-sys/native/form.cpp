@@ -12,9 +12,11 @@
 #include <unordered_map>
 
 // https://docs.wxwidgets.org/stable/classwx_frame.html
-const long DEFAULT_STYLE = wxSTAY_ON_TOP | wxRESIZE_BORDER | wxCLOSE_BOX | wxCAPTION;
+const long DEFAULT_STYLE = wxSTAY_ON_TOP | wxCLOSE_BOX | wxCAPTION;
 
 const int PADDING = 5;
+const int MULTILINE_MIN_HEIGHT = 100;
+const int MULTILINE_MIN_WIDTH = 100;
 
 FormMetadata *metadata = nullptr;
 std::vector<ValuePair> values;
@@ -33,6 +35,26 @@ public:
 
     virtual wxString getValue() {
         return control->GetValue();
+    }
+};
+
+class ChoiceFieldWrapper {
+    wxChoice * control;
+public:
+    explicit ChoiceFieldWrapper(wxChoice * control): control(control) {}
+
+    virtual wxString getValue() {
+        return control->GetStringSelection();
+    }
+};
+
+class ListFieldWrapper {
+    wxListBox * control;
+public:
+    explicit ListFieldWrapper(wxListBox * control): control(control) {}
+
+    virtual wxString getValue() {
+        return control->GetStringSelection();
     }
 };
 
@@ -108,14 +130,51 @@ void FormFrame::AddComponent(wxPanel *parent, wxBoxSizer *sizer, FieldMetadata m
         case FieldType::TEXT:
         {
             const TextMetadata *textMeta = static_cast<const TextMetadata*>(meta.specific);
-            auto textControl = new wxTextCtrl(parent, NewControlId());
-            textControl->ChangeValue(textMeta->defaultText);
+            long style = 0;
+            if (textMeta->multiline) {
+                style |= wxTE_MULTILINE;
+            }
+
+            auto textControl = new wxTextCtrl(parent, NewControlId(), textMeta->defaultText, wxDefaultPosition, wxDefaultSize, style);
             
+            if (textMeta->multiline) {
+                textControl->SetMinSize(wxSize(MULTILINE_MIN_WIDTH, MULTILINE_MIN_HEIGHT));
+            }
+
             // Create the field wrapper
             std::unique_ptr<FieldWrapper> field((FieldWrapper*) new TextFieldWrapper(textControl));
             idMap[meta.id] = std::move(field);
             control = textControl;
             fields.push_back(textControl);
+            break;
+        }
+        case FieldType::CHOICE:
+        {
+            const ChoiceMetadata *choiceMeta = static_cast<const ChoiceMetadata*>(meta.specific);
+            wxArrayString choices;
+            for (int i = 0; i<choiceMeta->valueSize; i++) {
+                choices.Add(choiceMeta->values[i]);
+            }
+
+            void * choice = nullptr;
+            if (choiceMeta->choiceType == ChoiceType::DROPDOWN) {
+                choice = (void*) new wxChoice(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, choices);
+                
+                // Create the field wrapper
+                std::unique_ptr<FieldWrapper> field((FieldWrapper*) new ChoiceFieldWrapper((wxChoice*) choice));
+                idMap[meta.id] = std::move(field);
+            }else {
+                choice = (void*) new wxListBox(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, choices);
+
+                // Create the field wrapper
+                std::unique_ptr<FieldWrapper> field((FieldWrapper*) new ListFieldWrapper((wxListBox*) choice));
+                idMap[meta.id] = std::move(field);
+            }
+            
+            
+
+            control = choice;
+            fields.push_back(choice);
             break;
         }
         case FieldType::ROW:
@@ -125,7 +184,7 @@ void FormFrame::AddComponent(wxPanel *parent, wxBoxSizer *sizer, FieldMetadata m
             auto innerPanel = new wxPanel(panel, wxID_ANY);
             wxBoxSizer *hbox = new wxBoxSizer(wxHORIZONTAL);
             innerPanel->SetSizer(hbox);
-            sizer->Add(innerPanel, 1, wxEXPAND | wxALL, 0);
+            sizer->Add(innerPanel, 0, wxEXPAND | wxALL, 0);
             fields.push_back(innerPanel);
 
             for (int field = 0; field < rowMeta->fieldSize; field++) {
