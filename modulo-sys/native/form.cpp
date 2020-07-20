@@ -76,7 +76,8 @@ public:
     wxButton *submit;
 private:
     void AddComponent(wxPanel *parent, wxBoxSizer *sizer, FieldMetadata meta);
-    void OnSubmit(wxCommandEvent& event);
+    void Submit();
+    void OnSubmitBtn(wxCommandEvent& event);
     void OnEscape(wxKeyEvent& event);
 };
 enum
@@ -107,7 +108,7 @@ FormFrame::FormFrame(const wxString& title, const wxPoint& pos, const wxSize& si
     submit = new wxButton(panel, ID_Submit, "Submit");
     vbox->Add(submit, 1, wxEXPAND | wxALL, PADDING);
 
-    Bind(wxEVT_BUTTON, &FormFrame::OnSubmit, this, ID_Submit);
+    Bind(wxEVT_BUTTON, &FormFrame::OnSubmitBtn, this, ID_Submit);
     Bind(wxEVT_CHAR_HOOK, &FormFrame::OnEscape, this, wxID_ANY);
     // TODO: register ESC click handler: https://forums.wxwidgets.org/viewtopic.php?t=41926
 
@@ -204,7 +205,7 @@ void FormFrame::AddComponent(wxPanel *parent, wxBoxSizer *sizer, FieldMetadata m
     }
 }
 
-void FormFrame::OnSubmit(wxCommandEvent &event) {
+void FormFrame::Submit() {
     for (auto& field: idMap) {
         FieldWrapper * fieldWrapper = (FieldWrapper*) field.second.get();
         wxString value {fieldWrapper->getValue()};
@@ -221,18 +222,29 @@ void FormFrame::OnSubmit(wxCommandEvent &event) {
     Close(true);
 }
 
+void FormFrame::OnSubmitBtn(wxCommandEvent &event) {
+    Submit();
+}
+
 void FormFrame::OnEscape(wxKeyEvent& event) {
     if (event.GetKeyCode() == WXK_ESCAPE) {
         Close(true);
+    }else if(event.GetKeyCode() == WXK_RETURN && wxGetKeyState(WXK_CONTROL)) {
+        Submit();
     }else{
         event.Skip();
     }
 }
 
 extern "C" void interop_show_form(FormMetadata * _metadata, void (*callback)(ValuePair *values, int size, void *data), void *data) {
-    SetProcessDPIAware();
+    // Setup high DPI support on Windows
+    #ifdef __WXMSW__
+        SetProcessDPIAware();
+    #endif
+    
     metadata = _metadata;
-    wxEntry(0, nullptr);
+    int argc = 0;
+    wxEntry(argc, (char **)nullptr);
     callback(values.data(), values.size(), data);
 
     // Free up values
