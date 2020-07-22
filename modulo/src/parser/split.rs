@@ -1,5 +1,5 @@
 // Taken from: https://github.com/rust-lang/regex/issues/330#issuecomment-274058261
-use regex::{Regex, Captures, CaptureMatches};
+use regex::{CaptureMatches, Captures, Regex};
 
 pub struct SplitCaptures<'r, 't> {
     finder: CaptureMatches<'r, 't>,

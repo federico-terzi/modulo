@@ -1,5 +1,5 @@
-use regex::Regex;
 use super::split::*;
+use regex::Regex;
 
 lazy_static! {
     static ref FIELD_REGEX: Regex = Regex::new(r"\{\{(.*)\}\}").unwrap();
@@ -7,8 +7,8 @@ lazy_static! {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
-    Text(String),   // Text
-    Field(String),  // id: String
+    Text(String),  // Text
+    Field(String), // id: String
 }
 
 pub fn parse_layout(layout: &str) -> Vec<Vec<Token>> {
@@ -36,7 +36,7 @@ pub fn parse_layout(layout: &str) -> Vec<Vec<Token>> {
                 }
                 SplitState::Captured(caps) => {
                     if let Some(name) = caps.get(1) {
-                        let name = name.as_str().to_owned();    
+                        let name = name.as_str().to_owned();
                         row.push(Token::Field(name));
                     }
                 }
@@ -57,10 +57,17 @@ mod tests {
     fn test_parse_layout() {
         let layout = "Hey {{name}},\nHow are you?\n  \nCheers";
         let result = parse_layout(layout);
-        assert_eq!(result, vec![
-            vec![Token::Text("Hey ".to_owned()), Token::Field("name".to_owned()), Token::Text(",".to_owned())],
-            vec![Token::Text("How are you?".to_owned())],
-            vec![Token::Text("Cheers".to_owned())],
-        ]);
+        assert_eq!(
+            result,
+            vec![
+                vec![
+                    Token::Text("Hey ".to_owned()),
+                    Token::Field("name".to_owned()),
+                    Token::Text(",".to_owned())
+                ],
+                vec![Token::Text("How are you?".to_owned())],
+                vec![Token::Text("Cheers".to_owned())],
+            ]
+        );
     }
 }
