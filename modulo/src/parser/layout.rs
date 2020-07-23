@@ -2,7 +2,7 @@ use super::split::*;
 use regex::Regex;
 
 lazy_static! {
-    static ref FIELD_REGEX: Regex = Regex::new(r"\{\{(.*)\}\}").unwrap();
+    static ref FIELD_REGEX: Regex = Regex::new(r"\{\{(.*?)\}\}").unwrap();
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -67,6 +67,24 @@ mod tests {
                 ],
                 vec![Token::Text("How are you?".to_owned())],
                 vec![Token::Text("Cheers".to_owned())],
+            ]
+        );
+    }
+
+    #[test]
+    fn test_parse_layout_2() {
+        let layout = "Hey {{name}} {{surname}},";
+        let result = parse_layout(layout);
+        assert_eq!(
+            result,
+            vec![
+                vec![
+                    Token::Text("Hey ".to_owned()),
+                    Token::Field("name".to_owned()),
+                    Token::Text(" ".to_owned()),
+                    Token::Field("surname".to_owned()),
+                    Token::Text(",".to_owned())
+                ],
             ]
         );
     }
