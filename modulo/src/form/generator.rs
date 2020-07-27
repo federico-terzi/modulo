@@ -1,6 +1,5 @@
-use super::config::{FieldConfig, FormConfig};
+use super::config::{FieldConfig, FormConfig, FieldTypeConfig};
 use super::parser::layout::Token;
-use crate::config::FieldTypeConfig;
 use modulo_sys::form::types::*;
 use std::collections::HashMap;
 

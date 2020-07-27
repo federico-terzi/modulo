@@ -85,8 +85,6 @@ enum
     ID_Submit = 20000
 };
 
-wxIMPLEMENT_APP_NO_MAIN(FormApp);
-
 bool FormApp::OnInit()
 {
     FormFrame *frame = new FormFrame(metadata->windowTitle, wxPoint(50, 50), wxSize(450, 340) );
@@ -243,8 +241,11 @@ extern "C" void interop_show_form(FormMetadata * _metadata, void (*callback)(Val
     #endif
     
     metadata = _metadata;
+
+    wxApp::SetInstance(new FormApp());
     int argc = 0;
     wxEntry(argc, (char **)nullptr);
+
     callback(values.data(), values.size(), data);
 
     // Free up values

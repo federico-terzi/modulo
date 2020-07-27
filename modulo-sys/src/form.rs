@@ -1,23 +1,7 @@
-use interop::FormMetadata;
+use crate::interop::*;
 use std::collections::HashMap;
 use std::ffi::CStr;
 use std::os::raw::c_int;
-
-// Native bindings
-
-#[allow(improper_ctypes)]
-#[link(name = "modulosys", kind = "static")]
-extern "C" {
-    fn interop_show_form(
-        metadata: *const FormMetadata,
-        callback: extern "C" fn(
-            values: *const interop::ValuePair,
-            size: c_int,
-            map: *mut HashMap<String, String>,
-        ),
-        map: *mut HashMap<String, String>,
-    );
-}
 
 // Form schema
 
@@ -85,19 +69,12 @@ pub mod types {
 
 #[allow(dead_code)]
 mod interop {
-    #![allow(non_upper_case_globals)]
-    #![allow(non_camel_case_types)]
-    #![allow(non_snake_case)]
-    include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
-
     use super::types;
+    use crate::interop::*;
+    use crate::Interoperable;
     use std::ffi::{c_void, CString};
     use std::os::raw::{c_char, c_int};
     use std::ptr::null;
-
-    pub(crate) trait Interoperable {
-        fn as_ptr(&self) -> *const c_void;
-    }
 
     pub(crate) struct OwnedForm {
         title: CString,
@@ -332,7 +309,8 @@ mod interop {
 }
 
 pub fn show(form: types::Form) -> HashMap<String, String> {
-    use interop::Interoperable;
+    use crate::Interoperable;
+    use std::os::raw::c_void;
 
     let owned_form: interop::OwnedForm = form.into();
     let metadata: *const FormMetadata = owned_form.as_ptr() as *const FormMetadata;
@@ -340,12 +318,13 @@ pub fn show(form: types::Form) -> HashMap<String, String> {
     let mut value_map: HashMap<String, String> = HashMap::new();
 
     extern "C" fn callback(
-        values: *const interop::ValuePair,
+        values: *const crate::interop::ValuePair,
         size: c_int,
-        map: *mut HashMap<String, String>,
+        map: *mut c_void,
     ) {
-        let values: &[interop::ValuePair] =
+        let values: &[crate::interop::ValuePair] =
             unsafe { std::slice::from_raw_parts(values, size as usize) };
+        let map = map as *mut HashMap<String, String>;
         let map = unsafe { &mut (*map) };
         for pair in values.iter() {
             unsafe {
@@ -361,10 +340,10 @@ pub fn show(form: types::Form) -> HashMap<String, String> {
 
     unsafe {
         // TODO: Nested rows should fail, add check
-        interop_show_form(
+        crate::interop::interop_show_form(
             metadata,
             callback,
-            &mut value_map as *mut HashMap<String, String>,
+            &mut value_map as *mut HashMap<String, String> as *mut c_void,
         );
     }
 

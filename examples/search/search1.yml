@@ -1,0 +1,8 @@
+title: "Test Search"
+items:
+  - id: "open"
+    label: "Open modulo"
+  - id: "close"
+    label: "Close modulo"
+  - id: "search"
+    label: "Search items"

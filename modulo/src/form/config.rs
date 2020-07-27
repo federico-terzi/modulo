@@ -7,6 +7,7 @@ fn default_fields() -> HashMap<String, FieldConfig> {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct FormConfig {
+    // TODO: title
     pub layout: String,
 
     #[serde(default = "default_fields")]

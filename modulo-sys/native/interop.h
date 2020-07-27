@@ -1,3 +1,5 @@
+// FORM
+
 typedef enum FieldType {
   ROW,
   LABEL,
@@ -47,3 +49,19 @@ typedef struct ValuePair {
   const char *id;
   const char *value;
 } ValuePair;
+
+// SEARCH
+
+typedef struct SearchItem {
+  const char *id;
+  const char *label;
+} SearchItem;
+
+typedef struct SearchResults {
+  const SearchItem * items;
+  const int itemSize;
+} SearchResults;
+
+typedef struct SearchMetadata {
+  const char *windowTitle;
+} SearchMetadata;
