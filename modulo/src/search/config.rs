@@ -9,7 +9,7 @@ fn default_items() -> Vec<SearchItem> {
 }
 
 fn default_algorithm() -> String {
-    "iexact".to_owned()
+    "ikey".to_owned()
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

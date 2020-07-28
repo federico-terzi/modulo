@@ -87,6 +87,8 @@ void SearchFrame::OnCharEvent(wxKeyEvent& event) {
         }else{
             SelectNext();
         }
+    }else if (event.GetKeyCode() == WXK_RETURN) {
+        Submit();
     }else{
         event.Skip();
     }
@@ -99,12 +101,20 @@ void SearchFrame::OnQueryChange(wxCommandEvent& event) {
 }
 
 void SearchFrame::SetItems(SearchItem *items, int itemSize) {
+    resultBox->Clear();
+
+    wxClientData ** data = new wxClientData*[itemSize + 1];
+
     wxArrayString wxItems;
     for (int i = 0; i<itemSize; i++) {
         wxString item = items[i].label;
         wxItems.Add(item);
+        
+        wxStringClientData * itemData = new wxStringClientData(items[i].id);
+        data[i] = itemData;
     }
-    resultBox->Set(wxItems);
+
+    resultBox->Set(wxItems, (wxClientData**) data);
 
     if (itemSize > 0) {
         resultBox->SetSelection(0);
@@ -132,7 +142,10 @@ void SearchFrame::SelectPrevious() {
 }
 
 void SearchFrame::Submit() {
-    
+    if (resultBox->GetCount() > 0 && resultBox->GetSelection() != wxNOT_FOUND) {
+        wxStringClientData * selected = (wxStringClientData*) resultBox->GetClientObject(resultBox->GetSelection());
+        wxString id = selected->GetData();
+    }
 }
 
 extern "C" void interop_show_search(SearchMetadata * _metadata, QueryCallback callback, void *_data) {
