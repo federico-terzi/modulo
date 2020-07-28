@@ -104,16 +104,10 @@ fn search_main(matches: &ArgMatches) {
         serde_json::from_str(&data).expect("unable to parse search configuration")
     };
 
-    //let search = form::generator::generate(config);
-    let result = modulo_sys::search::show(modulo_sys::search::types::Search {
-        title: "test".to_owned(),
-        items: vec![
-            modulo_sys::search::types::SearchItem {
-                id: "open".to_owned(),
-                label: "prova".to_owned(),
-            }
-        ]
-    });
+    let algorithm = search::algorithm::get_algorithm(&config.algorithm);
+
+    let search = search::generator::generate(config);
+    let result = modulo_sys::search::show(search, algorithm);
 
     //let output = serde_json::to_string(&values).expect("unable to encode values as JSON");
     //println!("{}", output);

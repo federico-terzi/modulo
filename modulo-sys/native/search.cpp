@@ -16,7 +16,11 @@ const long DEFAULT_STYLE = wxSTAY_ON_TOP | wxCLOSE_BOX | wxCAPTION;
 const int MIN_WIDTH = 500;
 const int MIN_HEIGHT = 20;
 
+typedef void (*QueryCallback)(const char * query, void * app, void * data);
+
 SearchMetadata *metadata = nullptr;
+QueryCallback queryCallback = nullptr;
+void * data = nullptr;
 
 // App Code
 
@@ -33,10 +37,13 @@ public:
     wxPanel *panel;
     wxTextCtrl *searchBar;
     wxListBox *resultBox;
+    void SetItems(SearchItem *items, int itemSize);
 private:
     void OnCharEvent(wxKeyEvent& event);
-    void OnSubmitBtn(wxCommandEvent& event);
-    void SetItems(SearchItem *items, int itemSize);
+    void OnQueryChange(wxCommandEvent& event);
+    void SelectNext();
+    void SelectPrevious();
+    void Submit();
 };
 
 bool SearchApp::OnInit()
@@ -52,7 +59,8 @@ SearchFrame::SearchFrame(const wxString& title, const wxPoint& pos, const wxSize
     wxBoxSizer *vbox = new wxBoxSizer(wxVERTICAL);
     panel->SetSizer(vbox);
 
-    searchBar = new wxTextCtrl(panel, NewControlId(), "", wxDefaultPosition, wxDefaultSize);
+    int textId = NewControlId();
+    searchBar = new wxTextCtrl(panel, textId, "", wxDefaultPosition, wxDefaultSize);
     vbox->Add(searchBar, 1, wxEXPAND | wxALL, 0);
     
     wxArrayString choices;
@@ -61,32 +69,88 @@ SearchFrame::SearchFrame(const wxString& title, const wxPoint& pos, const wxSize
     vbox->Add(resultBox, 5, wxEXPAND | wxALL, 0);
 
     Bind(wxEVT_CHAR_HOOK, &SearchFrame::OnCharEvent, this, wxID_ANY);
+    Bind(wxEVT_TEXT, &SearchFrame::OnQueryChange, this, textId);
 
     this->SetClientSize(panel->GetBestSize());
     this->CentreOnScreen();
+
+    // Trigger the first data update
+    queryCallback("", (void*) this, data);
 }
 
 void SearchFrame::OnCharEvent(wxKeyEvent& event) {
     if (event.GetKeyCode() == WXK_ESCAPE) {
         Close(true);
+    }else if(event.GetKeyCode() == WXK_TAB) {
+        if (wxGetKeyState(WXK_SHIFT)) {
+            SelectPrevious();
+        }else{
+            SelectNext();
+        }
     }else{
         event.Skip();
     }
 }
 
+void SearchFrame::OnQueryChange(wxCommandEvent& event) {
+    wxString queryString = searchBar->GetValue();
+    const char * query = queryString.ToUTF8();
+    queryCallback(query, (void*) this, data);
+}
+
 void SearchFrame::SetItems(SearchItem *items, int itemSize) {
+    wxArrayString wxItems;
+    for (int i = 0; i<itemSize; i++) {
+        wxString item = items[i].label;
+        wxItems.Add(item);
+    }
+    resultBox->Set(wxItems);
+
+    if (itemSize > 0) {
+        resultBox->SetSelection(0);
+    }
+}
+
+void SearchFrame::SelectNext() {
+    if (resultBox->GetCount() > 0 && resultBox->GetSelection() != wxNOT_FOUND) {
+        if (resultBox->GetSelection() < (resultBox->GetCount() - 1)) {
+            resultBox->SetSelection(resultBox->GetSelection() + 1);
+        }else{
+            resultBox->SetSelection(0);
+        }
+    }
+}
+
+void SearchFrame::SelectPrevious() {
+    if (resultBox->GetCount() > 0 && resultBox->GetSelection() != wxNOT_FOUND) {
+        if (resultBox->GetSelection() > 0) {
+            resultBox->SetSelection(resultBox->GetSelection() - 1);
+        }else{
+            resultBox->SetSelection(resultBox->GetCount() - 1);
+        }
+    }
+}
+
+void SearchFrame::Submit() {
     
 }
 
-extern "C" void interop_show_search(SearchMetadata * _metadata, void (*callback)(char * query, void *app), void *data) {
+extern "C" void interop_show_search(SearchMetadata * _metadata, QueryCallback callback, void *_data) {
     // Setup high DPI support on Windows
     #ifdef __WXMSW__
         SetProcessDPIAware();
     #endif
     
     metadata = _metadata;
+    queryCallback = callback;
+    data = _data;
     
     wxApp::SetInstance(new SearchApp());
     int argc = 0;
     wxEntry(argc, (char **)nullptr);
+}
+
+extern "C" void update_items(void * app, SearchItem * items, int itemSize) {
+    SearchFrame * frame = (SearchFrame *) app;
+    frame->SetItems(items, itemSize);
 }

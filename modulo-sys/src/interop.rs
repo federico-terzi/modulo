@@ -27,8 +27,15 @@ extern "C" {
         callback: extern "C" fn(
             query: *const c_char,
             app: *const c_void,
+            data: *const c_void,
         ),
-        items: *mut c_void,
+        items: *const c_void,
+    );
+
+    pub(crate) fn update_items(
+        app: *const c_void,
+        items: *const SearchItem,
+        itemCount: c_int,
     );
 }
 
