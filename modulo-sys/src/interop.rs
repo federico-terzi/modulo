@@ -24,12 +24,17 @@ extern "C" {
     // SEARCH
     pub(crate) fn interop_show_search(
         metadata: *const SearchMetadata,
-        callback: extern "C" fn(
+        search_callback: extern "C" fn(
             query: *const c_char,
             app: *const c_void,
             data: *const c_void,
         ),
         items: *const c_void,
+        result_callback: extern "C" fn(
+            id: *const c_char,
+            result: *mut c_void,
+        ),
+        result: *mut c_void,
     );
 
     pub(crate) fn update_items(

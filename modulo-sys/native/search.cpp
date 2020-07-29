@@ -17,10 +17,13 @@ const int MIN_WIDTH = 500;
 const int MIN_HEIGHT = 20;
 
 typedef void (*QueryCallback)(const char * query, void * app, void * data);
+typedef void (*ResultCallback)(const char * id, void * data);
 
 SearchMetadata *metadata = nullptr;
 QueryCallback queryCallback = nullptr;
+ResultCallback resultCallback = nullptr;
 void * data = nullptr;
+void * resultData = nullptr;
 
 // App Code
 
@@ -87,6 +90,10 @@ void SearchFrame::OnCharEvent(wxKeyEvent& event) {
         }else{
             SelectNext();
         }
+    }else if(event.GetKeyCode() == WXK_DOWN) {
+        SelectNext();
+    }else if(event.GetKeyCode() == WXK_UP) {
+        SelectPrevious();
     }else if (event.GetKeyCode() == WXK_RETURN) {
         Submit();
     }else{
@@ -145,18 +152,25 @@ void SearchFrame::Submit() {
     if (resultBox->GetCount() > 0 && resultBox->GetSelection() != wxNOT_FOUND) {
         wxStringClientData * selected = (wxStringClientData*) resultBox->GetClientObject(resultBox->GetSelection());
         wxString id = selected->GetData();
+        if (resultCallback) {
+            resultCallback(id.ToUTF8(), resultData);
+        }
+
+        Close(true);
     }
 }
 
-extern "C" void interop_show_search(SearchMetadata * _metadata, QueryCallback callback, void *_data) {
+extern "C" void interop_show_search(SearchMetadata * _metadata, QueryCallback _queryCallback, void *_data, ResultCallback _resultCallback, void *_resultData) {
     // Setup high DPI support on Windows
     #ifdef __WXMSW__
         SetProcessDPIAware();
     #endif
     
     metadata = _metadata;
-    queryCallback = callback;
+    queryCallback = _queryCallback;
+    resultCallback = _resultCallback;
     data = _data;
+    resultData = _resultData;
     
     wxApp::SetInstance(new SearchApp());
     int argc = 0;

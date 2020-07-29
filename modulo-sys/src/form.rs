@@ -310,7 +310,7 @@ mod interop {
 
 pub fn show(form: types::Form) -> HashMap<String, String> {
     use crate::Interoperable;
-    use std::os::raw::c_void;
+    use std::os::raw::{c_void, c_char};
 
     let owned_form: interop::OwnedForm = form.into();
     let metadata: *const FormMetadata = owned_form.as_ptr() as *const FormMetadata;
@@ -337,6 +337,8 @@ pub fn show(form: types::Form) -> HashMap<String, String> {
             }
         }
     }
+
+    
 
     unsafe {
         // TODO: Nested rows should fail, add check

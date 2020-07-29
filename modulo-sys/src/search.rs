@@ -110,14 +110,13 @@ pub fn show(search: types::Search, algorithm: Box<dyn Fn(&str, &Vec<types::Searc
         algorithm,
     };
 
-    extern "C" fn callback(
+    extern "C" fn search_callback(
         query: *const c_char,
         app: *const c_void,
         data: *const c_void,
     ) {
         let query = unsafe {CStr::from_ptr(query)};
         let query = query.to_string_lossy().to_string();
-        println!("'{}'", query);
 
         let search_data = data as *const SearchData;
         let search_data = unsafe {&*search_data};
@@ -132,15 +131,31 @@ pub fn show(search: types::Search, algorithm: Box<dyn Fn(&str, &Vec<types::Searc
         }
     };
 
+    let mut result: Option<String> = None;
+
+    extern "C" fn result_callback(
+        id: *const c_char,
+        result: *mut c_void,
+    ) {
+        let id = unsafe {CStr::from_ptr(id)};
+        let id = id.to_string_lossy().to_string();
+        let result: *mut Option<String> = result as *mut Option<String>;
+        unsafe {
+            *result = Some(id);
+        }
+    }
+
     unsafe {
         crate::interop::interop_show_search(
             metadata,
-            callback,
+            search_callback,
             &search_data as *const SearchData as *const c_void,
+            result_callback,
+            &mut result as *mut Option<String> as *mut c_void,
         );
     }
 
-    // value_map
+    println!("{:?}", result);
 
-    None
+    result
 }
