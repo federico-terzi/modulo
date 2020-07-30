@@ -4,6 +4,7 @@
 #ifndef WX_PRECOMP
     #include <wx/wx.h>
 #endif
+#include <wx/listctrl.h>
 
 #include "interop.h"
 
@@ -24,6 +25,8 @@ QueryCallback queryCallback = nullptr;
 ResultCallback resultCallback = nullptr;
 void * data = nullptr;
 void * resultData = nullptr;
+wxArrayString wxItems;
+wxArrayString wxIds;
 
 // App Code
 
@@ -32,6 +35,45 @@ class SearchApp: public wxApp
 public:
     virtual bool OnInit();
 };
+
+class ResultListView: public wxListView
+{
+public:
+    ResultListView(wxWindow *parent,
+               const wxWindowID id,
+               const wxPoint& pos,
+               const wxSize& size,
+               long style)
+        : wxListView(parent, id, pos, size, style)
+        {}
+    void RescaleColumns();
+private:
+    virtual wxString OnGetItemText(long item, long column) const wxOVERRIDE;
+};
+
+wxString ResultListView::OnGetItemText(long item, long column) const
+{
+    return wxItems[item];
+}
+
+// Taken from https://groups.google.com/forum/#!topic/wx-users/jOwhl53ES5M
+// Used to hide the horizontal scrollbar
+void ResultListView::RescaleColumns()
+{
+    int nWidth, nHeight;
+    GetClientSize(&nWidth, &nHeight);
+    const int main_col = 0;
+    if (GetColumnWidth(main_col) != nWidth )
+    {
+        #ifdef __WXMSW__
+            SetColumnWidth(main_col, nWidth);
+        #else
+            SetColumnWidth(main_col, nWidth -
+wxSystemSettings::GetMetric(wxSYS_HSCROLL_Y)  - 1 );          
+        #endif
+    }
+}
+
 class SearchFrame: public wxFrame
 {
 public:
@@ -39,11 +81,12 @@ public:
 
     wxPanel *panel;
     wxTextCtrl *searchBar;
-    wxListBox *resultBox;
+    ResultListView *resultBox;
     void SetItems(SearchItem *items, int itemSize);
 private:
     void OnCharEvent(wxKeyEvent& event);
     void OnQueryChange(wxCommandEvent& event);
+    void OnItemClickEvent(wxListEvent& event);
     void SelectNext();
     void SelectPrevious();
     void Submit();
@@ -67,12 +110,14 @@ SearchFrame::SearchFrame(const wxString& title, const wxPoint& pos, const wxSize
     vbox->Add(searchBar, 1, wxEXPAND | wxALL, 0);
     
     wxArrayString choices;
-    resultBox = new wxListBox(panel, NewControlId(), wxDefaultPosition, wxDefaultSize, choices);
-    resultBox->SetMinSize(wxSize(MIN_WIDTH, MIN_HEIGHT));
+    int resultId = NewControlId();
+    resultBox = new ResultListView(panel, resultId, wxDefaultPosition, wxSize(MIN_WIDTH, MIN_HEIGHT), wxLC_VIRTUAL | wxLC_REPORT | wxLC_NO_HEADER | wxLC_SINGLE_SEL);
+    resultBox->InsertColumn(0, "Results", wxLIST_FORMAT_LEFT, wxLIST_AUTOSIZE_USEHEADER);
     vbox->Add(resultBox, 5, wxEXPAND | wxALL, 0);
 
     Bind(wxEVT_CHAR_HOOK, &SearchFrame::OnCharEvent, this, wxID_ANY);
     Bind(wxEVT_TEXT, &SearchFrame::OnQueryChange, this, textId);
+    Bind(wxEVT_LIST_ITEM_ACTIVATED, &SearchFrame::OnItemClickEvent, this, resultId);
 
     this->SetClientSize(panel->GetBestSize());
     this->CentreOnScreen();
@@ -107,51 +152,61 @@ void SearchFrame::OnQueryChange(wxCommandEvent& event) {
     queryCallback(query, (void*) this, data);
 }
 
+void SearchFrame::OnItemClickEvent(wxListEvent& event) {
+    resultBox->Select(event.GetIndex());
+    Submit();
+}
+
 void SearchFrame::SetItems(SearchItem *items, int itemSize) {
-    resultBox->Clear();
+    wxItems.Clear();
+    wxIds.Clear();
 
-    wxClientData ** data = new wxClientData*[itemSize + 1];
-
-    wxArrayString wxItems;
     for (int i = 0; i<itemSize; i++) {
         wxString item = items[i].label;
         wxItems.Add(item);
         
-        wxStringClientData * itemData = new wxStringClientData(items[i].id);
-        data[i] = itemData;
+        wxString id = items[i].id;
+        wxIds.Add(id);
     }
 
-    resultBox->Set(wxItems, (wxClientData**) data);
-
+    resultBox->SetItemCount(itemSize);
+    resultBox->RefreshItems(0, itemSize-1);
+    resultBox->RescaleColumns();
+    
     if (itemSize > 0) {
-        resultBox->SetSelection(0);
+        resultBox->Select(0);
+        resultBox->EnsureVisible(0);
     }
 }
 
 void SearchFrame::SelectNext() {
-    if (resultBox->GetCount() > 0 && resultBox->GetSelection() != wxNOT_FOUND) {
-        if (resultBox->GetSelection() < (resultBox->GetCount() - 1)) {
-            resultBox->SetSelection(resultBox->GetSelection() + 1);
-        }else{
-            resultBox->SetSelection(0);
+    if (resultBox->GetItemCount() > 0 && resultBox->GetFirstSelected() != wxNOT_FOUND) {
+        int newSelected = 0;
+        if (resultBox->GetFirstSelected() < (resultBox->GetItemCount() - 1)) {
+            newSelected = resultBox->GetFirstSelected() + 1;
         }
+        
+        resultBox->Select(newSelected);
+        resultBox->EnsureVisible(newSelected);
     }
 }
 
 void SearchFrame::SelectPrevious() {
-    if (resultBox->GetCount() > 0 && resultBox->GetSelection() != wxNOT_FOUND) {
-        if (resultBox->GetSelection() > 0) {
-            resultBox->SetSelection(resultBox->GetSelection() - 1);
-        }else{
-            resultBox->SetSelection(resultBox->GetCount() - 1);
+    if (resultBox->GetItemCount() > 0 && resultBox->GetFirstSelected() != wxNOT_FOUND) {
+        int newSelected = resultBox->GetItemCount() - 1;
+        if (resultBox->GetFirstSelected() > 0) {
+            newSelected = resultBox->GetFirstSelected() - 1;
         }
+        
+        resultBox->Select(newSelected);
+        resultBox->EnsureVisible(newSelected);
     }
 }
 
 void SearchFrame::Submit() {
-    if (resultBox->GetCount() > 0 && resultBox->GetSelection() != wxNOT_FOUND) {
-        wxStringClientData * selected = (wxStringClientData*) resultBox->GetClientObject(resultBox->GetSelection());
-        wxString id = selected->GetData();
+    if (resultBox->GetItemCount() > 0 && resultBox->GetFirstSelected() != wxNOT_FOUND) {
+        long index = resultBox->GetFirstSelected();
+        wxString id = wxIds[index];
         if (resultCallback) {
             resultCallback(id.ToUTF8(), resultData);
         }
