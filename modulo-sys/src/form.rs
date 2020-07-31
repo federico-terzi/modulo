@@ -9,6 +9,7 @@ pub mod types {
     #[derive(Debug)]
     pub struct Form {
         pub title: String,
+        pub icon: Option<String>,
         pub fields: Vec<Field>,
     }
 
@@ -78,6 +79,7 @@ mod interop {
 
     pub(crate) struct OwnedForm {
         title: CString,
+        icon_path: CString,
         fields: Vec<OwnedField>,
 
         _metadata: Vec<FieldMetadata>,
@@ -99,14 +101,30 @@ mod interop {
             let _metadata: Vec<FieldMetadata> =
                 fields.iter().map(|field| field.metadata()).collect();
 
+            let icon_path = if let Some(icon_path) = form.icon.as_ref() {
+                icon_path.clone()
+            }else{
+                "".to_owned()
+            };
+
+            let icon_path = CString::new(icon_path).expect("unable to convert form icon to CString");
+
+            let icon_path_ptr = if form.icon.is_some() {
+                icon_path.as_ptr()
+            }else{
+                std::ptr::null()
+            };    
+
             let _interop = Box::new(FormMetadata {
                 windowTitle: title.as_ptr(),
+                iconPath: icon_path_ptr,
                 fields: _metadata.as_ptr(),
                 fieldSize: fields.len() as c_int,
             });
 
             Self {
                 title,
+                icon_path,
                 fields,
                 _metadata,
                 _interop,

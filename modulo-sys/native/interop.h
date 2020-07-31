@@ -41,6 +41,7 @@ typedef struct RowMetadata {
 
 typedef struct FormMetadata {
   const char *windowTitle;
+  const char *iconPath;
   const FieldMetadata *fields;
   const int fieldSize;
 } FormMetadata;

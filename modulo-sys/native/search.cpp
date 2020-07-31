@@ -1,9 +1,7 @@
 #define _UNICODE
 
-#include <wx/wxprec.h>
-#ifndef WX_PRECOMP
-    #include <wx/wx.h>
-#endif
+#include "common.h"
+
 #include <wx/listctrl.h>
 
 #include "interop.h"
@@ -96,12 +94,7 @@ bool SearchApp::OnInit()
 {
     SearchFrame *frame = new SearchFrame(searchMetadata->windowTitle, wxPoint(50, 50), wxSize(450, 340) );
     
-    if (searchMetadata->iconPath) {
-        wxIcon icon(searchMetadata->iconPath);
-        if (icon.IsOk()) {
-            frame->SetIcon(icon);
-        }
-    }
+    setFrameIcon(searchMetadata->iconPath, frame);
 
     frame->Show( true );
     return true;

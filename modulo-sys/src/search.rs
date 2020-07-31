@@ -13,6 +13,7 @@ pub mod types {
     #[derive(Debug)]
     pub struct Search {
         pub title: String,
+        pub icon: Option<String>,
         pub items: Vec<SearchItem>,
     }
 }
@@ -28,6 +29,7 @@ mod interop {
 
     pub(crate) struct OwnedSearch {
         title: CString,
+        icon_path: CString,
         items: Vec<OwnedSearchItem>,
         pub(crate) interop_items: Vec<SearchItem>,
         _interop: Box<SearchMetadata>,
@@ -51,13 +53,29 @@ mod interop {
                 item.to_search_item()
             }).collect();
 
+            let icon_path = if let Some(icon_path) = search.icon.as_ref() {
+                icon_path.clone()
+            }else{
+                "".to_owned()
+            };
+
+            let icon_path = CString::new(icon_path).expect("unable to convert search icon to CString");
+
+            let icon_path_ptr = if search.icon.is_some() {
+                icon_path.as_ptr()
+            }else{
+                std::ptr::null()
+            };
+
             let _interop = Box::new(SearchMetadata {
+                iconPath: icon_path_ptr,
                 windowTitle: title.as_ptr(),
             });
 
             Self {
                 title,
                 items,
+                icon_path,
                 interop_items,
                 _interop,
             }

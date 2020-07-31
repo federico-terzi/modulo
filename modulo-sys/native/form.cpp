@@ -1,9 +1,6 @@
 #define _UNICODE
 
-#include <wx/wxprec.h>
-#ifndef WX_PRECOMP
-    #include <wx/wx.h>
-#endif
+#include "common.h"
 
 #include "interop.h"
 
@@ -88,6 +85,7 @@ enum
 bool FormApp::OnInit()
 {
     FormFrame *frame = new FormFrame(formMetadata->windowTitle, wxPoint(50, 50), wxSize(450, 340) );
+    setFrameIcon(formMetadata->iconPath, frame);
     frame->Show( true );
     return true;
 }

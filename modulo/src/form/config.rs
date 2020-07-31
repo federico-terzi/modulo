@@ -1,13 +1,26 @@
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 
+fn default_title() -> String {
+    "modulo".to_owned()
+}
+
+fn default_icon() -> Option<String> {
+    None
+}
+
 fn default_fields() -> HashMap<String, FieldConfig> {
     HashMap::new()
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct FormConfig {
-    // TODO: title
+    #[serde(default = "default_title")]
+    pub title: String,
+
+    #[serde(default = "default_icon")]
+    pub icon: Option<String>,
+
     pub layout: String,
 
     #[serde(default = "default_fields")]

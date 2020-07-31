@@ -1,3 +1,5 @@
+title: "Example Form"
+#icon: "C:\\Users\\Freddy\\AppData\\Local\\espanso\\espanso.ico"
 layout: |
   Hey {{name}},
   {{message}}

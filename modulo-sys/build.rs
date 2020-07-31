@@ -35,6 +35,7 @@ fn build_native() {
         .cpp(true)
         .file("native/form.cpp")
         .file("native/search.cpp")
+        .file("native/common.cpp")
         .flag("/EHsc")
         .include(wx_include_dir)
         .include(wx_include_msvc_dir)

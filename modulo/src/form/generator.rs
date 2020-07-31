@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 pub fn generate(config: FormConfig) -> Form {
     let structure = super::parser::layout::parse_layout(&config.layout);
-    build_form(structure, config.fields)
+    build_form(config, structure)
 }
 
 fn create_field(token: &Token, field_map: &HashMap<String, FieldConfig>) -> Field {
@@ -45,7 +45,8 @@ fn create_field(token: &Token, field_map: &HashMap<String, FieldConfig>) -> Fiel
     }
 }
 
-fn build_form(structure: Vec<Vec<Token>>, field_map: HashMap<String, FieldConfig>) -> Form {
+fn build_form(form: FormConfig, structure: Vec<Vec<Token>>) -> Form {
+    let field_map = form.fields;
     let mut fields = Vec::new();
 
     for row in structure.iter() {
@@ -71,7 +72,8 @@ fn build_form(structure: Vec<Vec<Token>>, field_map: HashMap<String, FieldConfig
     }
 
     Form {
-        title: "modulo".to_owned(), // TODO: change
+        title: form.title,
+        icon: form.icon,
         fields,
     }
 }

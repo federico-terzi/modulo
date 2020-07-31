@@ -1,4 +1,5 @@
 title: "Test Search"
+#icon: "C:\\Users\\Freddy\\AppData\\Local\\espanso\\espanso.ico"
 items:
   - id: "open"
     label: "Open modulo"
