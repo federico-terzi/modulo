@@ -20,7 +20,7 @@ const int MIN_HEIGHT = 20;
 typedef void (*QueryCallback)(const char * query, void * app, void * data);
 typedef void (*ResultCallback)(const char * id, void * data);
 
-SearchMetadata *metadata = nullptr;
+SearchMetadata *searchMetadata = nullptr;
 QueryCallback queryCallback = nullptr;
 ResultCallback resultCallback = nullptr;
 void * data = nullptr;
@@ -48,7 +48,7 @@ public:
         {}
     void RescaleColumns();
 private:
-    virtual wxString OnGetItemText(long item, long column) const wxOVERRIDE;
+    virtual wxString OnGetItemText(long item, long column) const;
 };
 
 wxString ResultListView::OnGetItemText(long item, long column) const
@@ -94,7 +94,7 @@ private:
 
 bool SearchApp::OnInit()
 {
-    SearchFrame *frame = new SearchFrame(metadata->windowTitle, wxPoint(50, 50), wxSize(450, 340) );
+    SearchFrame *frame = new SearchFrame(searchMetadata->windowTitle, wxPoint(50, 50), wxSize(450, 340) );
     frame->Show( true );
     return true;
 }
@@ -221,7 +221,7 @@ extern "C" void interop_show_search(SearchMetadata * _metadata, QueryCallback _q
         SetProcessDPIAware();
     #endif
     
-    metadata = _metadata;
+    searchMetadata = _metadata;
     queryCallback = _queryCallback;
     resultCallback = _resultCallback;
     data = _data;

@@ -18,7 +18,7 @@ const int PADDING = 5;
 const int MULTILINE_MIN_HEIGHT = 100;
 const int MULTILINE_MIN_WIDTH = 100;
 
-FormMetadata *metadata = nullptr;
+FormMetadata *formMetadata = nullptr;
 std::vector<ValuePair> values;
 
 // Field Wrappers
@@ -87,7 +87,7 @@ enum
 
 bool FormApp::OnInit()
 {
-    FormFrame *frame = new FormFrame(metadata->windowTitle, wxPoint(50, 50), wxSize(450, 340) );
+    FormFrame *frame = new FormFrame(formMetadata->windowTitle, wxPoint(50, 50), wxSize(450, 340) );
     frame->Show( true );
     return true;
 }
@@ -98,8 +98,8 @@ FormFrame::FormFrame(const wxString& title, const wxPoint& pos, const wxSize& si
     wxBoxSizer *vbox = new wxBoxSizer(wxVERTICAL);
     panel->SetSizer(vbox);
 
-    for (int field = 0; field < metadata->fieldSize; field++) {
-        FieldMetadata meta = metadata->fields[field];
+    for (int field = 0; field < formMetadata->fieldSize; field++) {
+        FieldMetadata meta = formMetadata->fields[field];
         AddComponent(panel, vbox, meta);
     }
 
@@ -240,7 +240,7 @@ extern "C" void interop_show_form(FormMetadata * _metadata, void (*callback)(Val
         SetProcessDPIAware();
     #endif
     
-    metadata = _metadata;
+    formMetadata = _metadata;
 
     wxApp::SetInstance(new FormApp());
     int argc = 0;
