@@ -64,4 +64,5 @@ typedef struct SearchResults {
 
 typedef struct SearchMetadata {
   const char *windowTitle;
+  const char *iconPath;
 } SearchMetadata;

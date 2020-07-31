@@ -95,6 +95,14 @@ private:
 bool SearchApp::OnInit()
 {
     SearchFrame *frame = new SearchFrame(searchMetadata->windowTitle, wxPoint(50, 50), wxSize(450, 340) );
+    
+    if (searchMetadata->iconPath) {
+        wxIcon icon(searchMetadata->iconPath);
+        if (icon.IsOk()) {
+            frame->SetIcon(icon);
+        }
+    }
+
     frame->Show( true );
     return true;
 }
