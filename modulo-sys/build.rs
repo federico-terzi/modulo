@@ -85,6 +85,7 @@ fn build_native() {
     let mut build = cc::Build::new();
     build.cpp(true)
         .file("native/form.cpp")
+        .file("native/common.cpp")
         .file("native/search.cpp");
     build.flag("-std=c++17");
 
@@ -221,7 +222,8 @@ fn build_native() {
     let mut build = cc::Build::new();
     build.cpp(true)
         .file("native/form.cpp")
-        .file("native/search.cpp");
+        .file("native/search.cpp")
+        .file("native/common.cpp");
     build.flag("-std=c++17");
 
     for flag in cpp_flags {
