@@ -170,10 +170,11 @@ void SearchFrame::SetItems(SearchItem *items, int itemSize) {
     }
 
     resultBox->SetItemCount(itemSize);
-    resultBox->RefreshItems(0, itemSize-1);
+
     resultBox->RescaleColumns();
-    
+
     if (itemSize > 0) {
+        resultBox->RefreshItems(0, itemSize-1);
         resultBox->Select(0);
         resultBox->EnsureVisible(0);
     }
