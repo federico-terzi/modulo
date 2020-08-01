@@ -1,0 +1,9 @@
+steps:
+  - script: |
+      cargo build --release
+    displayName: Cargo build
+
+  - script: |
+      cd target/release
+      dir
+    displayName: Print artifacts

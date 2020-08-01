@@ -13,3 +13,5 @@ steps:
       nmake /f makefile.vc BUILD=release TARGET_CPU=X64
     displayName: "Compile wxWidgets"
     condition: ne(variables.WX_CACHE_RESTORED, 'true')
+  
+  - template: "install-rust.yml"

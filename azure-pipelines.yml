@@ -47,6 +47,6 @@ jobs:
       vmImage: 'windows-2019'
     steps:
       - template: ci/deps-win.yml
-      #- template: ci/test.yml
-      #- template: ci/build-win.yml
+      - template: ci/test.yml
+      - template: ci/build-win.yml
       #- template: ci/deploy.yml
