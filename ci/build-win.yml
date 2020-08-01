@@ -1,5 +1,22 @@
 steps:
   - script: |
+      for /f "tokens=*" %%i in ('vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Llvm.Clang -property installationPath') do set LIBCLANG_PATH="%%i\VC\Tools\Llvm\x64\bin"
+      echo "##vso[task.setvariable variable=LIBCLANG_PATH]%LIBCLANG_PATH%"
+      echo "Clang Path " %LIBCLANG_PATH%
+    displayName: "Find LLVM path"
+    name: "llvmset"
+
+  - script: |
+      pushd %LIBCLANG_PATH%
+      dir
+      popd
+    displayName: LLVM info
+
+  - script: |
+      cargo test --release
+    displayName: Cargo test
+
+  - script: |
       cargo build --release
     displayName: Cargo build
 

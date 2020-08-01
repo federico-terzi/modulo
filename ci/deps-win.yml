@@ -15,10 +15,3 @@ steps:
     condition: ne(variables.WX_CACHE_RESTORED, 'true')
   
   - template: "install-rust.yml"
-  
-  - script: |
-      for /f "tokens=*" %%i in ('vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Llvm.Clang -property installationPath') do set LIBCLANG_PATH="%%i\Tools\Llvm\x64\bin"
-      echo "##vso[task.setvariable variable=LIBCLANG_PATH;isOutput=true]%LIBCLANG_PATH%"
-      echo "Clang Path " %LIBCLANG_PATH%
-    displayName: "Add LLVM to Path"
-    name: "llvmset"
