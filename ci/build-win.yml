@@ -12,6 +12,10 @@ steps:
         print("##vso[task.setvariable variable=LIBCLANG_PATH]"+path)
 
   - script: |
+      echo "##vso[task.setvariable variable=WXWIN]wxWidgets"
+    displayName: "Set wxWidgets directory"
+
+  - script: |
       pushd %LIBCLANG_PATH%
       dir
       popd
