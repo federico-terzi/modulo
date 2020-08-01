@@ -9,6 +9,11 @@ steps:
       echo "##vso[task.setvariable variable=msbuildpath]%msbuildpath%"
       echo "Path " %msbuildpath%
       %msbuildpath%\VC\Auxiliary\Build\vcvars64.bat
+
+      dir
+
       cd wxWidgets\build\msw
+      dir
+      echo "compiling..."
       nmake /f makefile.vc BUILD=release TARGET_CPU=X64
     displayName: "Compile wxWidgets"
