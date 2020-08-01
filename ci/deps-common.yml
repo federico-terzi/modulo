@@ -9,7 +9,7 @@ steps:
     inputs:
       scriptSource: 'inline'
       script: |
-        import urllib
+        import urllib.request
         urllib.request.urlretrieve("https://github.com/wxWidgets/wxWidgets/releases/download/v3.1.4/wxWidgets-3.1.4.zip", "wxWidgets.zip")
 
   - task: ExtractFiles@1
