@@ -1,6 +1,6 @@
 steps:
   - script: |
-      for /f "tokens=*" %%i in ('vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Llvm.Clang -property installationPath') do set LIBCLANG_PATH="%%i\VC\Tools\Llvm\x64\bin"
+      for /f "tokens=*" %%i in ('vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Llvm.Clang -property installationPath') do set LIBCLANG_PATH="%%i\VC\Tools\Llvm\bin"
       echo "##vso[task.setvariable variable=LIBCLANG_PATH]%LIBCLANG_PATH%"
       echo "Clang Path " %LIBCLANG_PATH%
     displayName: "Find LLVM path"
