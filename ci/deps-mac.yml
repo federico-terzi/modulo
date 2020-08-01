@@ -9,7 +9,7 @@ steps:
       pushd wxWidgets
       mkdir build-cocoa
       pushd build-cocoa
-      ../configure --disable-shared --enable-macosx_arch=x86_64
+      ../configure --disable-shared --enable-macosx_arch=x86_64 --with-libjpeg=builtin --with-libpng=builtin --with-libtiff=builtin
       make -j4      
     displayName: "Compile wxWidgets"
     condition: ne(variables.WX_CACHE_RESTORED, 'true')
