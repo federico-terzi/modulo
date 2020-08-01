@@ -23,5 +23,5 @@ steps:
 
       Set-Location .\wxWidgets\build\msw
 
-      nmake /f .\makefile.vc BUILD=release TARGET_CPU=X64 2>&1
+      Invoke-Expression "nmake.exe /f .\makefile.vc BUILD=release TARGET_CPU=X64" 2>&1
     displayName: Compile wxWidgets
