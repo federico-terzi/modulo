@@ -1,0 +1,17 @@
+steps:
+  - template: "deps-common.yml"
+
+  - script: |
+      brew install llvm
+    displayName: "Install LLVM"
+
+  - script: |
+      pushd wxWidgets
+      mkdir build-cocoa
+      pushd build-cocoa
+      ../configure --disable-shared --enable-macosx_arch=x86_64
+      make -j4      
+    displayName: "Compile wxWidgets"
+    condition: ne(variables.WX_CACHE_RESTORED, 'true')
+  
+  - template: "install-rust.yml"

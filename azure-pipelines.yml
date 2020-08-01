@@ -33,14 +33,14 @@ jobs:
   #       displayName: Setting up docker
   #     - template: ci/deploy.yml
 
-  # - job: macOS
-  #   pool:
-  #     vmImage: 'macOS-10.14'
-  #   steps:
-  #     - template: ci/test.yml
-  #     - template: ci/build-macos.yml
-  #     - template: ci/deploy.yml
-  #     - template: ci/publish-homebrew.yml
+  - job: macOS
+    pool:
+      vmImage: 'macOS-10.14'
+    steps:
+      - template: ci/deps-mac.yml
+      - template: ci/build-mac.yml
+      - template: ci/deploy.yml
+      #- template: ci/publish-homebrew.yml
 
   - job: Windows
     pool:

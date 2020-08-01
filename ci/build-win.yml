@@ -36,4 +36,5 @@ steps:
       dir
       popd
       copy target\release\modulo.exe dist
+      rename dist\modulo.exe dist\modulo-win.exe
     displayName: Copy artifacts

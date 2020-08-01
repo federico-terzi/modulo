@@ -1,0 +1,22 @@
+steps:
+  - script: |
+      echo "##vso[task.setvariable variable=WXMAC]$(pwd)/wxWidgets"
+    displayName: "Set wxWidgets directory"
+
+  - script: |
+      set -e
+      cargo test --release
+    displayName: Cargo test
+
+  - script: |
+      set -e
+      cargo build --release
+    displayName: Cargo build
+
+  - script: |
+      mkdir dist
+      pushd target/release
+      dir
+      popd
+      cp target/release/modulo dist/modulo-mac
+    displayName: Copy artifacts
