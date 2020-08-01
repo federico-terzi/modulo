@@ -32,9 +32,10 @@ steps:
 
   - script: |
       mkdir dist
-      pushd target/release
+      pushd target\release
       dir
       popd
       copy target\release\modulo.exe dist
-      ren dist\modulo.exe dist\modulo-win.exe
+      pushd dist
+      ren modulo.exe modulo-win.exe
     displayName: Copy artifacts
