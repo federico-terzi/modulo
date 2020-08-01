@@ -12,7 +12,7 @@ steps:
   - script: |
       echo "Set LLVM variable"
 
-      for /f "tokens=*" %%i in ('vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Llvm.Clang -property installationPath') do set LIBCLANG_PATH="%%i\Tools\Llvm\x64\bin"
+      for /f "tokens=*" %%i in ('vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Llvm.Clang -property installationPath') do set LIBCLANG_PATH="%%i\Tools\Llvm\bin"
       echo "Clang Path " %LIBCLANG_PATH%
 
       pushd %LIBCLANG_PATH%
