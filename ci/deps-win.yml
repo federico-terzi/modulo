@@ -19,7 +19,6 @@ steps:
         }
       }
 
-      .\buildconf.bat
       Set-Location .\wxWidgets\build\msw
 
       nmake /f makefile.vc BUILD=release TARGET_CPU=X64
