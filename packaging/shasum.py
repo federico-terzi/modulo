@@ -7,7 +7,7 @@ BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
 dirname = sys.argv[1]
 
 for n in glob.glob(dirname+"/*"):
-    sha1 = hashlib.sha1()
+    sha1 = hashlib.sha256()
 
     with open(n, 'rb') as f:
         while True:

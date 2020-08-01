@@ -4,8 +4,6 @@ layout: |
   Hey {{name}},
   {{message}}
 
-  Looking forward to hearing from you!
-
   {{end}}
 
   Cheers :)
