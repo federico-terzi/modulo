@@ -25,5 +25,5 @@ steps:
 
       ls
 
-      nmake.exe /f makefile.vc BUILD=release TARGET_CPU=X64
+      nmake /f makefile.vc BUILD=release TARGET_CPU=X86
     displayName: Compile wxWidgets
