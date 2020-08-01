@@ -4,24 +4,10 @@ parameters:
 steps:
   - template: "deps-common.yml"
 
-  # Took from https://www.cicoria.com/using-vcvars64-vcvars-bat-from-powershell-and-azure-devops/
-  - powershell: |
-      $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-
-      $vcvarspath = &$vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
-      Write-Output "vc tools located at: $vcvarspath"
-
-      cmd.exe /c "call `"$vcvarspath\VC\Auxiliary\Build\vcvars64.bat`" && set > %temp%\vcvars.txt"
-
-      Get-Content "$env:temp\vcvars.txt" | Foreach-Object {
-        if ($_ -match "^(.*?)=(.*)$") {
-          Set-Content "env:\$($matches[1])" $matches[2]
-        }
-      }
-
-      ls
-
-      Set-Location .\wxWidgets\build\msw
-
-      nmake.exe /f makefile.vc BUILD=release TARGET_CPU=X64 2>$null
-    displayName: Compile wxWidgets
+  - script: |
+      for /f "tokens=*" %%i in ('vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') do set msbuildpath="%%i"
+      echo "##vso[task.setvariable variable=msbuildpath]%msbuildpath%"
+      %vcvarspath%\VC\Auxiliary\Build\vcvars64.bat
+      cd wxWidgets\build\msw
+      nmake.exe /f makefile.vc BUILD=release TARGET_CPU=X64
+    displayName: "Compile wxWidgets"
