@@ -5,7 +5,7 @@
 
 variables:
   # Increment and commit this number to invalidate wxWidgets cache
-  WXWIDGETS_CACHE_ID: 1 
+  WXWIDGETS_CACHE_ID: 2 
 
 trigger:
 - master
