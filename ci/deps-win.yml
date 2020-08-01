@@ -23,7 +23,5 @@ steps:
 
       Set-Location .\wxWidgets\build\msw
 
-      ls
-
-      nmake /f .\makefile.vc BUILD=release TARGET_CPU=X64
+      nmake /f .\makefile.vc BUILD=release TARGET_CPU=X64 2>&1
     displayName: Compile wxWidgets
