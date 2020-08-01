@@ -6,6 +6,9 @@
 trigger:
 - master
 
+variables:
+  WXWIDGETS_CACHE_ID: 1 # Increment and commit this number to invalidate wxWidgets cache
+
 jobs:
   # - job: Linux
   #   pool:
