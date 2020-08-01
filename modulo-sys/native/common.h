@@ -10,4 +10,6 @@
 
 void setFrameIcon(const char * iconPath, wxFrame * frame);
 
+void Activate(wxFrame * frame);
+
 #endif

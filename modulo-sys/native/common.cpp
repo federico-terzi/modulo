@@ -1,5 +1,9 @@
 #include "common.h"
 
+#ifdef __WXMSW__
+#include <windows.h>
+#endif
+
 void setFrameIcon(const char * iconPath, wxFrame * frame) {
     if (iconPath) {
         wxString iconPath(iconPath);
@@ -15,4 +19,34 @@ void setFrameIcon(const char * iconPath, wxFrame * frame) {
             frame->SetIcon(icon);
         }
     }
+}
+
+void Activate(wxFrame * frame) {
+    #ifdef __WXMSW__
+
+    HWND handle = frame->GetHandle();
+    if (handle == GetForegroundWindow()) {
+        return;
+    }
+
+    if (IsIconic(handle)) {
+        ShowWindow(handle, 9);
+    }
+
+    INPUT ip;
+    ip.type = INPUT_KEYBOARD;
+    ip.ki.wScan = 0;
+    ip.ki.time = 0;
+    ip.ki.dwExtraInfo = 0;
+    ip.ki.wVk = VK_MENU;
+    ip.ki.dwFlags = 0;
+
+    SendInput(1, &ip, sizeof(INPUT));
+    ip.ki.dwFlags = KEYEVENTF_KEYUP;
+
+    SendInput(1, &ip, sizeof(INPUT));
+
+    SetForegroundWindow(handle);
+
+    #endif
 }

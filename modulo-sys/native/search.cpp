@@ -93,10 +93,9 @@ private:
 bool SearchApp::OnInit()
 {
     SearchFrame *frame = new SearchFrame(searchMetadata->windowTitle, wxPoint(50, 50), wxSize(450, 340) );
-    
     setFrameIcon(searchMetadata->iconPath, frame);
-
     frame->Show( true );
+    Activate(frame);
     return true;
 }
 SearchFrame::SearchFrame(const wxString& title, const wxPoint& pos, const wxSize& size)

@@ -87,6 +87,9 @@ bool FormApp::OnInit()
     FormFrame *frame = new FormFrame(formMetadata->windowTitle, wxPoint(50, 50), wxSize(450, 340) );
     setFrameIcon(formMetadata->iconPath, frame);
     frame->Show( true );
+
+    Activate(frame);
+
     return true;
 }
 FormFrame::FormFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
