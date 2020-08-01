@@ -1,6 +1,3 @@
-parameters:
-  rust_version: stable
-
 steps:
   - template: "deps-common.yml"
 

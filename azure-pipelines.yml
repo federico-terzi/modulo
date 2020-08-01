@@ -3,11 +3,12 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
+variables:
+  # Increment and commit this number to invalidate wxWidgets cache
+  WXWIDGETS_CACHE_ID: 1 
+
 trigger:
 - master
-
-variables:
-  WXWIDGETS_CACHE_ID: 1 # Increment and commit this number to invalidate wxWidgets cache
 
 jobs:
   # - job: Linux
