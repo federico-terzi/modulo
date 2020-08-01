@@ -1,0 +1,19 @@
+steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.7'
+      addToPath: true
+
+  - task: PythonScript@0
+    diplayName: "Download wxWidgets"
+    inputs:
+      scriptSource: 'inline'
+      script: |
+        import urllib
+        urllib.request.urlretrieve("https://github.com/wxWidgets/wxWidgets/releases/download/v3.1.4/wxWidgets-3.1.4.zip", "wxWidgets.zip")
+
+  - task: ExtractFiles@1
+    displayName: "Extract wxWidgets"
+    inputs:
+      archiveFilePatterns: "wxWidgets.zip"
+      destinationFolder: "wxWidgets"
