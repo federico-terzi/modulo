@@ -5,7 +5,7 @@ steps:
       addToPath: true
 
   - task: PythonScript@0
-    diplayName: "Download wxWidgets"
+    displayName: "Download wxWidgets"
     inputs:
       scriptSource: 'inline'
       script: |
