@@ -65,6 +65,8 @@ void ResultListView::RescaleColumns()
     {
         #ifdef __WXMSW__
             SetColumnWidth(main_col, nWidth);
+        #elif __WXOSX__
+            SetColumnWidth(main_col, nWidth);
         #else
             SetColumnWidth(main_col, nWidth -
 wxSystemSettings::GetMetric(wxSYS_HSCROLL_Y)  - 1 );          
@@ -171,13 +173,13 @@ void SearchFrame::SetItems(SearchItem *items, int itemSize) {
 
     resultBox->SetItemCount(itemSize);
 
-    resultBox->RescaleColumns();
-
     if (itemSize > 0) {
         resultBox->RefreshItems(0, itemSize-1);
         resultBox->Select(0);
         resultBox->EnsureVisible(0);
     }
+
+    resultBox->RescaleColumns();
 }
 
 void SearchFrame::SelectNext() {
