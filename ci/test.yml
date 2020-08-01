@@ -14,7 +14,11 @@ steps:
 
       for /f "tokens=*" %%i in ('vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Llvm.Clang -property installationPath') do set LIBCLANG_PATH="%%i\Tools\Llvm\x64\bin"
       echo "Clang Path " %LIBCLANG_PATH%
-      
+
+      pushd %LIBCLANG_PATH%
+      dir
+      popd
+
       cargo test --release
     displayName: Cargo tests on Windows
     condition: eq(variables['Agent.OS'], 'Windows_NT')
