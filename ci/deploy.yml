@@ -18,6 +18,14 @@ steps:
       echo "##vso[task.setvariable variable=vers]v$vv"
     condition: eq(variables['Agent.OS'], 'Windows_NT')
     displayName: Obtain version from Cargo.toml on Windows
+
+  - task: PythonScript@0
+    displayName: "Calculate SHA sums"
+    inputs:
+      scriptSource: 'filePath'
+      scriptPath: "packaging/shasum.py"
+      arguments: "dist"
+
   - task: GitHubRelease@0
     displayName: Create GitHub release
     inputs:
