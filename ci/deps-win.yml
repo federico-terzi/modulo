@@ -19,7 +19,11 @@ steps:
         }
       }
 
+      ls
+
       Set-Location .\wxWidgets\build\msw
+
+      ls
 
       nmake /f makefile.vc BUILD=release TARGET_CPU=X64
     displayName: Compile wxWidgets
