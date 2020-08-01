@@ -1,8 +1,18 @@
+variables:
+  WXWIDGETS_CACHE_ID: 1 # Increment and commit this number to invalidate wxWidgets cache
+
 steps:
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '3.7'
       addToPath: true
+  
+  - task: Cache@2
+    inputs:
+      key: '"$(Agent.OS)" | "$(WXWIDGETS_CACHE_ID)"'
+      path: "wxWidgets"
+    displayName: Cache wxWidgets libs
+    cacheHitVar: WX_CACHE_RESTORED
 
   - task: PythonScript@0
     displayName: "Download wxWidgets"
@@ -11,9 +21,11 @@ steps:
       script: |
         import urllib.request
         urllib.request.urlretrieve("https://github.com/wxWidgets/wxWidgets/releases/download/v3.1.4/wxWidgets-3.1.4.zip", "wxWidgets.zip")
+    condition: ne(variables.WX_CACHE_RESTORED, 'true')
 
   - task: ExtractFiles@1
     displayName: "Extract wxWidgets"
     inputs:
       archiveFilePatterns: "wxWidgets.zip"
       destinationFolder: "wxWidgets"
+    condition: ne(variables.WX_CACHE_RESTORED, 'true')
