@@ -35,5 +35,5 @@ steps:
       pushd target/release
       dir
       popd
-      copy target/release/modulo.exe dist/modulo.exe
+      copy target\release\modulo.exe dist
     displayName: Copy artifacts
