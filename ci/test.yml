@@ -10,6 +10,11 @@ steps:
     displayName: Cargo tests on Unix
     condition: not(eq(variables['Agent.OS'], 'Windows_NT'))
   - script: |
+      echo "Set LLVM variable"
+
+      for /f "tokens=*" %%i in ('vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Llvm.Clang -property installationPath') do set LIBCLANG_PATH="%%i\Tools\Llvm\x64\bin"
+      echo "Clang Path " %LIBCLANG_PATH%
+      
       cargo test --release
     displayName: Cargo tests on Windows
     condition: eq(variables['Agent.OS'], 'Windows_NT')
