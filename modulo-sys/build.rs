@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 
 // TODO: add documentation for windows compile
 // Go to %WXWIN%/build/msw
-// nmake /f makefile.vc BUILD=release TARGET_CPU=X86
+// nmake /f makefile.vc BUILD=release TARGET_CPU=X64
 
 // Then install bindgen dependencies:
 // https://rust-lang.github.io/rust-bindgen/requirements.html
