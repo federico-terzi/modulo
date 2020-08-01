@@ -6,7 +6,7 @@ steps:
       script: |
         import subprocess
         path = subprocess.run(['vswhere', '-latest', '-products', '*', '-requires', 'Microsoft.VisualStudio.Component.VC.Llvm.Clang', '-property', 'installationPath'], stdout=subprocess.PIPE).stdout.decode('utf-8')
-        path = path.replace('"', "")
+        path = path.replace('"', "").strip()
         path = path + "\\VC\\Tools\\Llvm\\x64\\bin"
         print("Clang path ", path)
         print("##vso[task.setvariable variable=LIBCLANG_PATH]"+path)
