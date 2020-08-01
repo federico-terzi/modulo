@@ -31,6 +31,9 @@ steps:
     displayName: Cargo build
 
   - script: |
-      cd target/release
+      mkdir dist
+      pushd target/release
       dir
-    displayName: Print artifacts
+      popd
+      copy target/release/modulo.exe dist/modulo.exe
+    displayName: Copy artifacts

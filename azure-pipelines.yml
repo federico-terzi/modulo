@@ -48,4 +48,4 @@ jobs:
     steps:
       - template: ci/deps-win.yml
       - template: ci/build-win.yml
-      #- template: ci/deploy.yml
+      - template: ci/deploy.yml
