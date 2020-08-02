@@ -63,14 +63,7 @@ void ResultListView::RescaleColumns()
     const int main_col = 0;
     if (GetColumnWidth(main_col) != nWidth )
     {
-        #ifdef __WXMSW__
-            SetColumnWidth(main_col, nWidth);
-        #elif __WXOSX__
-            SetColumnWidth(main_col, nWidth);
-        #else
-            SetColumnWidth(main_col, nWidth -
-wxSystemSettings::GetMetric(wxSYS_HSCROLL_Y)  - 1 );          
-        #endif
+        SetColumnWidth(main_col, nWidth);
     }
 }
 

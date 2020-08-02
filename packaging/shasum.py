@@ -20,7 +20,7 @@ for n in glob.glob(dirname+"/*"):
 
     print(n + " -> " + h)
 
-    newfilename = os.path.basename(n) + ".sha256"
+    newfilename = os.path.basename(n) + ".sha256.txt"
 
     with open(os.path.join(dirname, newfilename), "w") as k:
         k.write(h)
