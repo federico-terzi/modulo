@@ -17,4 +17,4 @@ clap = "2.33.1"
 maintainer = "Federico Terzi <federicoterzi96@gmail.com>"
 depends = "$auto, libwxgtk3.0-0v5"
 section = "utility"
-license-file = ["LICENSE", "1"]
+license-file = ["../LICENSE", "1"]
