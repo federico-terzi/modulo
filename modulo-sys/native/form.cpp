@@ -228,7 +228,7 @@ void FormFrame::OnSubmitBtn(wxCommandEvent &event) {
 void FormFrame::OnEscape(wxKeyEvent& event) {
     if (event.GetKeyCode() == WXK_ESCAPE) {
         Close(true);
-    }else if(event.GetKeyCode() == WXK_RETURN && wxGetKeyState(WXK_CONTROL)) {
+    }else if(event.GetKeyCode() == WXK_RETURN && wxGetKeyState(WXK_RAW_CONTROL)) {
         Submit();
     }else{
         event.Skip();
