@@ -33,6 +33,3 @@ RUN set -eux; \
 RUN mkdir modulo
 
 COPY . modulo
-
-RUN cd modulo \
-    && cargo install cargo-deb

@@ -18,7 +18,7 @@ jobs:
       - script: |
           mkdir dist
           sudo docker build -t modulo-ubuntu . -f ci/ubuntu/Dockerfile
-          sudo docker run --rm -v "$(pwd)/dist:/shared" modulo-ubuntu modulo/ci/ubuntu/build_deb.sh
+          sudo docker run --rm -v "$(pwd)/dist:/shared" modulo-ubuntu modulo/ci/ubuntu/build_app_image.sh
         displayName: Setting up docker
       - template: ci/deploy.yml
 
