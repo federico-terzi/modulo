@@ -47,6 +47,8 @@ TODO
 
 ### macOS
 
+#### espanso users
+
 If you use modulo as part of espanso and used Homebrew to install it, modulo is automatically included since version 0.7.0.
 
 #### Prebuilt release
