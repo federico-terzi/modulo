@@ -3,6 +3,9 @@
 #ifdef __WXMSW__
 #include <windows.h>
 #endif
+#ifdef __WXOSX__
+#include "mac.h"
+#endif
 
 void setFrameIcon(const char * iconPath, wxFrame * frame) {
     if (iconPath) {
@@ -48,5 +51,8 @@ void Activate(wxFrame * frame) {
 
     SetForegroundWindow(handle);
 
+    #endif
+    #ifdef __WXOSX__
+    ActivateApp();
     #endif
 }

@@ -86,7 +86,8 @@ fn build_native() {
     build.cpp(true)
         .file("native/form.cpp")
         .file("native/common.cpp")
-        .file("native/search.cpp");
+        .file("native/search.cpp")
+        .file("native/mac.mm");
     build.flag("-std=c++17");
 
     for flag in cpp_flags {
