@@ -122,7 +122,7 @@ void FormFrame::AddComponent(wxPanel *parent, wxBoxSizer *sizer, FieldMetadata m
         case FieldType::LABEL:
         {
             const LabelMetadata *labelMeta = static_cast<const LabelMetadata*>(meta.specific);
-            auto label = new wxStaticText(parent, wxID_ANY, labelMeta->text, wxDefaultPosition, wxDefaultSize);
+            auto label = new wxStaticText(parent, wxID_ANY, wxString::FromUTF8(labelMeta->text), wxDefaultPosition, wxDefaultSize);
             control = label;
             fields.push_back(label);
             break;
