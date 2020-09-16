@@ -63,6 +63,7 @@ pub mod types {
     pub struct ChoiceMetadata {
         pub values: Vec<String>,
         pub choice_type: ChoiceType,
+        pub default_value: String,
     }
 }
 
@@ -103,17 +104,18 @@ mod interop {
 
             let icon_path = if let Some(icon_path) = form.icon.as_ref() {
                 icon_path.clone()
-            }else{
+            } else {
                 "".to_owned()
             };
 
-            let icon_path = CString::new(icon_path).expect("unable to convert form icon to CString");
+            let icon_path =
+                CString::new(icon_path).expect("unable to convert form icon to CString");
 
             let icon_path_ptr = if form.icon.is_some() {
                 icon_path.as_ptr()
-            }else{
+            } else {
                 std::ptr::null()
-            };    
+            };
 
             let _interop = Box::new(FormMetadata {
                 windowTitle: title.as_ptr(),
@@ -250,6 +252,7 @@ mod interop {
     struct OwnedChoiceMetadata {
         values: Vec<CString>,
         values_ptr_array: Vec<*const c_char>,
+        default_value: CString,
         _interop: Box<ChoiceMetadata>,
     }
 
@@ -275,14 +278,19 @@ mod interop {
                 types::ChoiceType::List => ChoiceType_LIST,
             };
 
+            let default_value = CString::new(metadata.default_value)
+                .expect("unable to convert default value to CString");
+
             let _interop = Box::new(ChoiceMetadata {
                 values: values_ptr_array.as_ptr(),
                 valueSize: values.len() as c_int,
                 choiceType: choice_type,
+                defaultValue: default_value.as_ptr(),
             });
             Self {
                 values,
                 values_ptr_array,
+                default_value,
                 _interop,
             }
         }
@@ -328,7 +336,7 @@ mod interop {
 
 pub fn show(form: types::Form) -> HashMap<String, String> {
     use crate::Interoperable;
-    use std::os::raw::{c_void, c_char};
+    use std::os::raw::{c_char, c_void};
 
     let owned_form: interop::OwnedForm = form.into();
     let metadata: *const FormMetadata = owned_form.as_ptr() as *const FormMetadata;
@@ -355,8 +363,6 @@ pub fn show(form: types::Form) -> HashMap<String, String> {
             }
         }
     }
-
-    
 
     unsafe {
         // TODO: Nested rows should fail, add check

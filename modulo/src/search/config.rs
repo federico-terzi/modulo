@@ -31,7 +31,6 @@ pub struct SearchConfig {
     pub algorithm: String,
 }
 
-
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SearchItem {
     pub id: String,

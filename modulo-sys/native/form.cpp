@@ -151,21 +151,35 @@ void FormFrame::AddComponent(wxPanel *parent, wxBoxSizer *sizer, FieldMetadata m
         case FieldType::CHOICE:
         {
             const ChoiceMetadata *choiceMeta = static_cast<const ChoiceMetadata*>(meta.specific);
+
+            int selectedItem = -1;
             wxArrayString choices;
             for (int i = 0; i<choiceMeta->valueSize; i++) {
                 choices.Add(choiceMeta->values[i]);
+
+                if (strcmp(choiceMeta->values[i], choiceMeta->defaultValue) == 0) {
+                    selectedItem = i;
+                }
             }
 
             void * choice = nullptr;
             if (choiceMeta->choiceType == ChoiceType::DROPDOWN) {
                 choice = (void*) new wxChoice(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, choices);
-                
+
+                if (selectedItem >= 0) {
+                    ((wxChoice*)choice)->SetSelection(selectedItem);
+                }
+
                 // Create the field wrapper
                 std::unique_ptr<FieldWrapper> field((FieldWrapper*) new ChoiceFieldWrapper((wxChoice*) choice));
                 idMap[meta.id] = std::move(field);
             }else {
                 choice = (void*) new wxListBox(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, choices);
-
+                
+                if (selectedItem >= 0) {
+                    ((wxListBox*)choice)->SetSelection(selectedItem);
+                }
+                
                 // Create the field wrapper
                 std::unique_ptr<FieldWrapper> field((FieldWrapper*) new ListFieldWrapper((wxListBox*) choice));
                 idMap[meta.id] = std::move(field);

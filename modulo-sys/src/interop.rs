@@ -3,7 +3,7 @@
 #![allow(non_snake_case)]
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
-use std::os::raw::{c_void, c_int, c_char};
+use std::os::raw::{c_char, c_int, c_void};
 
 // Native bindings
 
@@ -13,11 +13,7 @@ extern "C" {
     // FORM
     pub(crate) fn interop_show_form(
         metadata: *const FormMetadata,
-        callback: extern "C" fn(
-            values: *const ValuePair,
-            size: c_int,
-            map: *mut c_void,
-        ),
+        callback: extern "C" fn(values: *const ValuePair, size: c_int, map: *mut c_void),
         map: *mut c_void,
     );
 
@@ -30,17 +26,9 @@ extern "C" {
             data: *const c_void,
         ),
         items: *const c_void,
-        result_callback: extern "C" fn(
-            id: *const c_char,
-            result: *mut c_void,
-        ),
+        result_callback: extern "C" fn(id: *const c_char, result: *mut c_void),
         result: *mut c_void,
     );
 
-    pub(crate) fn update_items(
-        app: *const c_void,
-        items: *const SearchItem,
-        itemCount: c_int,
-    );
+    pub(crate) fn update_items(app: *const c_void, items: *const SearchItem, itemCount: c_int);
 }
-
