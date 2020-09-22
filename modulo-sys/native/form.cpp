@@ -135,7 +135,7 @@ void FormFrame::AddComponent(wxPanel *parent, wxBoxSizer *sizer, FieldMetadata m
                 style |= wxTE_MULTILINE;
             }
 
-            auto textControl = new wxTextCtrl(parent, NewControlId(), textMeta->defaultText, wxDefaultPosition, wxDefaultSize, style);
+            auto textControl = new wxTextCtrl(parent, NewControlId(), wxString::FromUTF8(textMeta->defaultText), wxDefaultPosition, wxDefaultSize, style);
             
             if (textMeta->multiline) {
                 textControl->SetMinSize(wxSize(MULTILINE_MIN_WIDTH, MULTILINE_MIN_HEIGHT));
@@ -155,7 +155,7 @@ void FormFrame::AddComponent(wxPanel *parent, wxBoxSizer *sizer, FieldMetadata m
             int selectedItem = -1;
             wxArrayString choices;
             for (int i = 0; i<choiceMeta->valueSize; i++) {
-                choices.Add(choiceMeta->values[i]);
+                choices.Add(wxString::FromUTF8(choiceMeta->values[i]));
 
                 if (strcmp(choiceMeta->values[i], choiceMeta->defaultValue) == 0) {
                     selectedItem = i;

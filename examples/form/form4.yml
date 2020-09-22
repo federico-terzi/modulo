@@ -1,0 +1,6 @@
+layout: |
+  Hello 中文測試 {{name}},
+  This form is built with modulo!
+fields:
+  name:
+    default: 中
