@@ -1,0 +1,9 @@
+layout: "Author: {{author}}"
+fields:
+  author:
+    default: "Two"
+    type: choice
+    values:
+      - "AmberHaelo"
+      - "Two"
+      - "Three"

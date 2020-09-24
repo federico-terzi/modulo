@@ -1,6 +1,6 @@
 #[macro_use]
 extern crate lazy_static;
-use clap::{crate_version, App, Arg, SubCommand, ArgMatches};
+use clap::{crate_version, App, Arg, ArgMatches, SubCommand};
 
 mod form;
 mod search;
@@ -24,7 +24,7 @@ fn main() {
                         .short("j")
                         .required(false)
                         .takes_value(false)
-                        .help("Interpret the input data as JSON")
+                        .help("Interpret the input data as JSON"),
                 ),
         )
         .subcommand(
@@ -41,7 +41,7 @@ fn main() {
                         .short("j")
                         .required(false)
                         .takes_value(false)
-                        .help("Interpret the input data as JSON")
+                        .help("Interpret the input data as JSON"),
                 ),
         )
         .get_matches();
@@ -60,20 +60,24 @@ fn main() {
 fn form_main(matches: &ArgMatches) {
     let as_json: bool = matches.is_present("json");
 
-    let input_file = matches.value_of("input_file").expect("missing input, please specify the -i option");
+    let input_file = matches
+        .value_of("input_file")
+        .expect("missing input, please specify the -i option");
     let data = if input_file == "-" {
         use std::io::Read;
         let mut buffer = String::new();
-        std::io::stdin().read_to_string(&mut buffer).expect("unable to obtain input from stdin");
+        std::io::stdin()
+            .read_to_string(&mut buffer)
+            .expect("unable to obtain input from stdin");
         buffer
-    }else{
+    } else {
         let data = std::fs::read_to_string(input_file).expect("unable to read input file");
         data
     };
 
     let config: form::config::FormConfig = if !as_json {
         serde_yaml::from_str(&data).expect("unable to parse form configuration")
-    }else{
+    } else {
         serde_json::from_str(&data).expect("unable to parse form configuration")
     };
 
@@ -87,20 +91,24 @@ fn form_main(matches: &ArgMatches) {
 fn search_main(matches: &ArgMatches) {
     let as_json: bool = matches.is_present("json");
 
-    let input_file = matches.value_of("input_file").expect("missing input, please specify the -i option");
+    let input_file = matches
+        .value_of("input_file")
+        .expect("missing input, please specify the -i option");
     let data = if input_file == "-" {
         use std::io::Read;
         let mut buffer = String::new();
-        std::io::stdin().read_to_string(&mut buffer).expect("unable to obtain input from stdin");
+        std::io::stdin()
+            .read_to_string(&mut buffer)
+            .expect("unable to obtain input from stdin");
         buffer
-    }else{
+    } else {
         let data = std::fs::read_to_string(input_file).expect("unable to read input file");
         data
     };
 
     let config: search::config::SearchConfig = if !as_json {
         serde_yaml::from_str(&data).expect("unable to parse search configuration")
-    }else{
+    } else {
         serde_json::from_str(&data).expect("unable to parse search configuration")
     };
 

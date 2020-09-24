@@ -25,6 +25,7 @@ typedef enum ChoiceType {
 typedef struct ChoiceMetadata {
   const char * const * values;
   const int valueSize;
+  const char *defaultValue;
   const ChoiceType choiceType;
 } ChoiceMetadata;
 

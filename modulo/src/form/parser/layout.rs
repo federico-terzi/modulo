@@ -77,15 +77,13 @@ mod tests {
         let result = parse_layout(layout);
         assert_eq!(
             result,
-            vec![
-                vec![
-                    Token::Text("Hey ".to_owned()),
-                    Token::Field("name".to_owned()),
-                    Token::Text(" ".to_owned()),
-                    Token::Field("surname".to_owned()),
-                    Token::Text(",".to_owned())
-                ],
-            ]
+            vec![vec![
+                Token::Text("Hey ".to_owned()),
+                Token::Field("name".to_owned()),
+                Token::Text(" ".to_owned()),
+                Token::Field("surname".to_owned()),
+                Token::Text(",".to_owned())
+            ],]
         );
     }
 }

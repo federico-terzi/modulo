@@ -1,4 +1,4 @@
-use super::config::{FieldConfig, FormConfig, FieldTypeConfig};
+use super::config::{FieldConfig, FieldTypeConfig, FormConfig};
 use super::parser::layout::Token;
 use modulo_sys::form::types::*;
 use std::collections::HashMap;
@@ -29,10 +29,12 @@ fn create_field(token: &Token, field_map: &HashMap<String, FieldConfig>) -> Fiel
                 FieldTypeConfig::Choice(config) => FieldType::Choice(ChoiceMetadata {
                     values: config.values.clone(),
                     choice_type: ChoiceType::Dropdown,
+                    default_value: config.default.clone(),
                 }),
                 FieldTypeConfig::List(config) => FieldType::Choice(ChoiceMetadata {
                     values: config.values.clone(),
                     choice_type: ChoiceType::List,
+                    default_value: config.default.clone(),
                 }),
             };
 

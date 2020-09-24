@@ -87,7 +87,7 @@ bool FormApp::OnInit()
     FormFrame *frame = new FormFrame(formMetadata->windowTitle, wxPoint(50, 50), wxSize(450, 340) );
     setFrameIcon(formMetadata->iconPath, frame);
     frame->Show( true );
-
+    
     Activate(frame);
 
     return true;
@@ -122,7 +122,7 @@ void FormFrame::AddComponent(wxPanel *parent, wxBoxSizer *sizer, FieldMetadata m
         case FieldType::LABEL:
         {
             const LabelMetadata *labelMeta = static_cast<const LabelMetadata*>(meta.specific);
-            auto label = new wxStaticText(parent, wxID_ANY, labelMeta->text, wxDefaultPosition, wxDefaultSize);
+            auto label = new wxStaticText(parent, wxID_ANY, wxString::FromUTF8(labelMeta->text), wxDefaultPosition, wxDefaultSize);
             control = label;
             fields.push_back(label);
             break;
@@ -135,7 +135,7 @@ void FormFrame::AddComponent(wxPanel *parent, wxBoxSizer *sizer, FieldMetadata m
                 style |= wxTE_MULTILINE;
             }
 
-            auto textControl = new wxTextCtrl(parent, NewControlId(), textMeta->defaultText, wxDefaultPosition, wxDefaultSize, style);
+            auto textControl = new wxTextCtrl(parent, NewControlId(), wxString::FromUTF8(textMeta->defaultText), wxDefaultPosition, wxDefaultSize, style);
             
             if (textMeta->multiline) {
                 textControl->SetMinSize(wxSize(MULTILINE_MIN_WIDTH, MULTILINE_MIN_HEIGHT));
@@ -151,21 +151,35 @@ void FormFrame::AddComponent(wxPanel *parent, wxBoxSizer *sizer, FieldMetadata m
         case FieldType::CHOICE:
         {
             const ChoiceMetadata *choiceMeta = static_cast<const ChoiceMetadata*>(meta.specific);
+
+            int selectedItem = -1;
             wxArrayString choices;
             for (int i = 0; i<choiceMeta->valueSize; i++) {
-                choices.Add(choiceMeta->values[i]);
+                choices.Add(wxString::FromUTF8(choiceMeta->values[i]));
+
+                if (strcmp(choiceMeta->values[i], choiceMeta->defaultValue) == 0) {
+                    selectedItem = i;
+                }
             }
 
             void * choice = nullptr;
             if (choiceMeta->choiceType == ChoiceType::DROPDOWN) {
                 choice = (void*) new wxChoice(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, choices);
-                
+
+                if (selectedItem >= 0) {
+                    ((wxChoice*)choice)->SetSelection(selectedItem);
+                }
+
                 // Create the field wrapper
                 std::unique_ptr<FieldWrapper> field((FieldWrapper*) new ChoiceFieldWrapper((wxChoice*) choice));
                 idMap[meta.id] = std::move(field);
             }else {
                 choice = (void*) new wxListBox(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, choices);
-
+                
+                if (selectedItem >= 0) {
+                    ((wxListBox*)choice)->SetSelection(selectedItem);
+                }
+                
                 // Create the field wrapper
                 std::unique_ptr<FieldWrapper> field((FieldWrapper*) new ListFieldWrapper((wxListBox*) choice));
                 idMap[meta.id] = std::move(field);

@@ -1,6 +1,6 @@
 pub mod form;
-pub mod search;
 pub(crate) mod interop;
+pub mod search;
 
 use std::ffi::c_void;
 

@@ -67,22 +67,30 @@ impl Default for TextFieldConfig {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ChoiceFieldConfig {
     pub values: Vec<String>,
+    pub default: String,
 }
 
 impl Default for ChoiceFieldConfig {
     fn default() -> Self {
-        Self { values: Vec::new() }
+        Self {
+            values: Vec::new(),
+            default: "".to_owned(),
+        }
     }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ListFieldConfig {
     pub values: Vec<String>,
+    pub default: String,
 }
 
 impl Default for ListFieldConfig {
     fn default() -> Self {
-        Self { values: Vec::new() }
+        Self {
+            values: Vec::new(),
+            default: "".to_owned(),
+        }
     }
 }
 
@@ -111,18 +119,26 @@ impl<'a> From<&'a AutoFieldConfig> for FieldConfig {
                 FieldTypeConfig::Text(config)
             }
             "choice" => {
-                let config = ChoiceFieldConfig {
+                let mut config = ChoiceFieldConfig {
                     values: other.values.clone(),
                     ..Default::default()
                 };
 
+                if let Some(default) = &other.default {
+                    config.default = default.clone();
+                }
+
                 FieldTypeConfig::Choice(config)
             }
             "list" => {
-                let config = ListFieldConfig {
+                let mut config = ListFieldConfig {
                     values: other.values.clone(),
                     ..Default::default()
                 };
+
+                if let Some(default) = &other.default {
+                    config.default = default.clone();
+                }
 
                 FieldTypeConfig::List(config)
             }
