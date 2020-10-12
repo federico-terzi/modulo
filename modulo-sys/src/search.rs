@@ -167,7 +167,5 @@ pub fn show(
         );
     }
 
-    println!("{:?}", result);
-
     result
 }

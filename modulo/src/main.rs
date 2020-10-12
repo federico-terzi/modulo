@@ -1,5 +1,7 @@
 #[macro_use]
 extern crate lazy_static;
+use std::collections::HashMap;
+
 use clap::{crate_version, App, Arg, ArgMatches, SubCommand};
 
 mod form;
@@ -116,7 +118,9 @@ fn search_main(matches: &ArgMatches) {
 
     let search = search::generator::generate(config);
     let result = modulo_sys::search::show(search, algorithm);
+    let mut result_map = HashMap::new();
+    result_map.insert("selected", result);
 
-    //let output = serde_json::to_string(&values).expect("unable to encode values as JSON");
-    //println!("{}", output);
+    let output = serde_json::to_string(&result_map).expect("unable to encode values as JSON");
+    println!("{}", output);
 }
