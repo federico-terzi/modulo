@@ -12,9 +12,11 @@
 // Platform-specific styles
 #ifdef __WXMSW__
 const int SEARCH_BAR_FONT_SIZE = 16;
+const long DEFAULT_STYLE = wxSTAY_ON_TOP | wxFRAME_TOOL_WINDOW;
 #endif
 #ifdef __WXOSX__
 const int SEARCH_BAR_FONT_SIZE = 20;
+const long DEFAULT_STYLE = wxSTAY_ON_TOP | wxFRAME_TOOL_WINDOW | wxRESIZE_BORDER;
 #endif
 
 // TODO: linux
@@ -23,7 +25,6 @@ const wxColour SELECTION_LIGHT_BG = wxColour(164, 210, 253);
 const wxColour SELECTION_DARK_BG = wxColour(49, 88, 126);
 
 // https://docs.wxwidgets.org/stable/classwx_frame.html
-const long DEFAULT_STYLE = wxSTAY_ON_TOP | wxFRAME_TOOL_WINDOW | wxRESIZE_BORDER;
 const int MIN_WIDTH = 500;
 const int MIN_HEIGHT = 80;
 
@@ -77,8 +78,6 @@ ResultListBox::ResultListBox(wxWindow *parent, bool isDark, const wxWindowID id,
 
 void ResultListBox::OnDrawBackground(wxDC& dc, const wxRect& rect, size_t n) const
 {
-    dc.SetBrush(wxNullBrush);
-    dc.SetPen(wxNullPen);
     if (IsSelected(n)) {
         if (isDark) {
             dc.SetBrush(wxBrush(SELECTION_DARK_BG));
@@ -88,6 +87,7 @@ void ResultListBox::OnDrawBackground(wxDC& dc, const wxRect& rect, size_t n) con
     } else {
         dc.SetBrush(*wxTRANSPARENT_BRUSH);
     }
+    dc.SetPen(*wxTRANSPARENT_PEN);
     dc.DrawRectangle(0, 0, rect.GetRight(), rect.GetBottom());
 }
 
