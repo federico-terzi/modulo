@@ -96,8 +96,8 @@ void ResultListBox::OnDrawBackground(wxDC& dc, const wxRect& rect, size_t n) con
 wxString ResultListBox::OnGetItem(size_t n) const
 {
     wxString textColor = isDark ? "white" : "";
-    wxString shortcut = (n < 8) ? wxString::Format(wxT("⌥%i"), (int) n+1) : " ";
-    return wxString::Format(wxT("<font color='%s'><table width='100%%'><tr><td>%s</td><td align='right'><b>%s</b></td></tr></table></font>"), textColor, wxItems[n], shortcut);
+    wxString shortcut = (n < 8) ? wxString::Format(wxT("Alt+%i"), (int) n+1) : " ";
+    return wxString::Format(wxT("<font color='%s'><table width='100%%'><tr><td>%s</td><td align='right'><b>:esp</b> <i>(%s)</i></td></tr></table></font>"), textColor, wxItems[n], shortcut);
 }
 
 class SearchFrame: public wxFrame
