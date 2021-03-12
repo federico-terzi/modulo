@@ -15,6 +15,9 @@ const long DEFAULT_STYLE = wxSTAY_ON_TOP | wxCLOSE_BOX | wxCAPTION;
 const int MIN_WIDTH = 500;
 const int MIN_HEIGHT = 20;
 
+const int MAIN_COL_WIDTH_RATIO = 88;
+const int SHORT_COL_WIDTH_RATIO = 100 - MAIN_COL_WIDTH_RATIO;
+
 typedef void (*QueryCallback)(const char * query, void * app, void * data);
 typedef void (*ResultCallback)(const char * id, void * data);
 
@@ -51,7 +54,15 @@ private:
 
 wxString ResultListView::OnGetItemText(long item, long column) const
 {
-    return wxItems[item];
+    if (column == 0) {
+        return wxItems[item];
+    } else {
+        if (item < 8) {
+            return wxString("Alt+") + wxString::Format(wxT("%i"), item + 1);;
+        } else {
+            return "";
+        }
+    }
 }
 
 // Taken from https://groups.google.com/forum/#!topic/wx-users/jOwhl53ES5M
@@ -60,10 +71,17 @@ void ResultListView::RescaleColumns()
 {
     int nWidth, nHeight;
     GetClientSize(&nWidth, &nHeight);
-    const int main_col = 0;
-    if (GetColumnWidth(main_col) != nWidth )
+    int mainWidth = (nWidth * MAIN_COL_WIDTH_RATIO) / 100;
+    int shortWidth = (nWidth * SHORT_COL_WIDTH_RATIO) / 100;
+    int main_col = 0;
+    int short_col = 1;
+    if (GetColumnWidth(main_col) != mainWidth )
     {
-        SetColumnWidth(main_col, nWidth);
+        SetColumnWidth(main_col, mainWidth);
+    }
+    if (GetColumnWidth(short_col) != shortWidth )
+    {
+        SetColumnWidth(short_col, shortWidth);
     }
 }
 
@@ -74,6 +92,7 @@ public:
 
     wxPanel *panel;
     wxTextCtrl *searchBar;
+    wxStaticBitmap *iconPanel;
     ResultListView *resultBox;
     void SetItems(SearchItem *items, int itemSize);
 private:
@@ -94,20 +113,38 @@ bool SearchApp::OnInit()
     return true;
 }
 SearchFrame::SearchFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
-        : wxFrame(NULL, wxID_ANY, title, pos, size, DEFAULT_STYLE)
+        : wxFrame(NULL, wxID_ANY, title, pos, size, wxFRAME_TOOL_WINDOW )
 {
+    wxInitAllImageHandlers();
+
     panel = new wxPanel(this, wxID_ANY);
     wxBoxSizer *vbox = new wxBoxSizer(wxVERTICAL);
     panel->SetSizer(vbox);
 
+    wxBoxSizer *topBox = new wxBoxSizer(wxHORIZONTAL);
+
+    wxBitmap bitmap = wxBitmap(wxT("C:\\Users\\fredd\\Insync\\Development\\Espanso\\Images\\icongreensmall.png"), wxBITMAP_TYPE_PNG);
+    wxImage image = bitmap.ConvertToImage();
+    image.Rescale(40, 40);
+    wxBitmap resizedBitmap = wxBitmap(image, -1);
+    iconPanel = new wxStaticBitmap( panel, wxID_ANY, resizedBitmap, wxDefaultPosition, wxSize(40, 40));
+    topBox->Add(iconPanel, 0, wxEXPAND | wxLEFT, 10);
+
     int textId = NewControlId();
     searchBar = new wxTextCtrl(panel, textId, "", wxDefaultPosition, wxDefaultSize);
-    vbox->Add(searchBar, 1, wxEXPAND | wxALL, 0);
+    wxFont font = searchBar->GetFont();
+    font.SetPointSize(16);
+    searchBar->SetFont(font);
+    topBox->Add(searchBar, 1, wxEXPAND | wxALL, 10);
+
+    vbox->Add(topBox, 1, wxEXPAND);
     
     wxArrayString choices;
     int resultId = NewControlId();
     resultBox = new ResultListView(panel, resultId, wxDefaultPosition, wxSize(MIN_WIDTH, MIN_HEIGHT), wxLC_VIRTUAL | wxLC_REPORT | wxLC_NO_HEADER | wxLC_SINGLE_SEL);
-    resultBox->InsertColumn(0, "Results", wxLIST_FORMAT_LEFT, wxLIST_AUTOSIZE_USEHEADER);
+    //resultBox->InsertColumn(0, "Results", wxLIST_FORMAT_LEFT, wxLIST_AUTOSIZE_USEHEADER);
+    resultBox->InsertColumn(0, "Results", wxLIST_FORMAT_LEFT, wxLIST_AUTOSIZE);
+    resultBox->InsertColumn(1, "Shortcut", wxLIST_FORMAT_RIGHT, wxLIST_AUTOSIZE);
     vbox->Add(resultBox, 5, wxEXPAND | wxALL, 0);
 
     Bind(wxEVT_CHAR_HOOK, &SearchFrame::OnCharEvent, this, wxID_ANY);
