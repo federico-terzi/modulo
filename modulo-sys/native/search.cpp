@@ -18,8 +18,10 @@ const long DEFAULT_STYLE = wxSTAY_ON_TOP | wxFRAME_TOOL_WINDOW;
 const int SEARCH_BAR_FONT_SIZE = 20;
 const long DEFAULT_STYLE = wxSTAY_ON_TOP | wxFRAME_TOOL_WINDOW | wxRESIZE_BORDER;
 #endif
-
-// TODO: linux
+#ifdef __LINUX__
+const int SEARCH_BAR_FONT_SIZE = 20;
+const long DEFAULT_STYLE = wxSTAY_ON_TOP | wxFRAME_TOOL_WINDOW;
+#endif
 
 const wxColour SELECTION_LIGHT_BG = wxColour(164, 210, 253);
 const wxColour SELECTION_DARK_BG = wxColour(49, 88, 126);
