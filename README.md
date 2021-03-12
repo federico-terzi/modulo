@@ -77,7 +77,7 @@ make -j6
 
 4. Install LLVM using Homebrew with: `brew install llvm`
 
-5. Now open the `modulo` project directory in the Terminal and compile with: `WXMAC=$USER/wxWidgets cargo build --release`
+5. Now open the `modulo` project directory in the Terminal and compile with: `WXMAC=$HOME/wxWidgets cargo build --release`
 
 6. You will find the compiled binary in the `target/release` directory.
 

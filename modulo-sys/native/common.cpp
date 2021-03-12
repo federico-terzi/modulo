@@ -56,3 +56,9 @@ void Activate(wxFrame * frame) {
     ActivateApp();
     #endif
 }
+
+void SetupWindowStyle(wxFrame * frame) {
+    #ifdef __WXOSX__
+        SetWindowStyles((NSWindow*) frame->MacGetTopLevelWindowRef());
+    #endif
+}

@@ -12,4 +12,6 @@ void setFrameIcon(const char * iconPath, wxFrame * frame);
 
 void Activate(wxFrame * frame);
 
+void SetupWindowStyle(wxFrame * frame);
+
 #endif
