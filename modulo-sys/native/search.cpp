@@ -57,10 +57,10 @@ public:
 protected:
     // override this method to return data to be shown in the listbox (this is
     // mandatory)
-    virtual wxString OnGetItem(size_t n) const wxOVERRIDE;
+    virtual wxString OnGetItem(size_t n) const;
 
     // change the appearance by overriding these functions (this is optional)
-    virtual void OnDrawBackground(wxDC& dc, const wxRect& rect, size_t n) const wxOVERRIDE;
+    virtual void OnDrawBackground(wxDC& dc, const wxRect& rect, size_t n) const;
 
     bool isDark;
 public:
@@ -133,7 +133,16 @@ SearchFrame::SearchFrame(const wxString& title, const wxPoint& pos, const wxSize
 {
     wxInitAllImageHandlers();
 
-    bool isDark = wxSystemSettings::GetAppearance().IsDark();
+    #if wxCHECK_VERSION(3,1,3)
+        bool isDark = wxSystemSettings::GetAppearance().IsDark();
+    #else
+        // Workaround needed for previous versions of wxWidgets
+        const wxColour bg = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW);
+        const wxColour fg = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
+        unsigned int bgSum =  (bg.Red() + bg.Blue() + bg.Green());
+        unsigned int fgSum =  (fg.Red() + fg.Blue() + fg.Green());
+        bool isDark = fgSum > bgSum;
+    #endif
 
     panel = new wxPanel(this, wxID_ANY);
     wxBoxSizer *vbox = new wxBoxSizer(wxVERTICAL);
@@ -141,12 +150,14 @@ SearchFrame::SearchFrame(const wxString& title, const wxPoint& pos, const wxSize
 
     wxBoxSizer *topBox = new wxBoxSizer(wxHORIZONTAL);
 
-    wxBitmap bitmap = wxBitmap(wxT("C:\\Users\\fredd\\Insync\\Development\\Espanso\\Images\\icongreensmall.png"), wxBITMAP_TYPE_PNG);
-    wxImage image = bitmap.ConvertToImage();
-    image.Rescale(32, 32, wxIMAGE_QUALITY_HIGH);
-    wxBitmap resizedBitmap = wxBitmap(image, -1);
-    iconPanel = new wxStaticBitmap( panel, wxID_ANY, resizedBitmap, wxDefaultPosition, wxSize(32, 32));
-    topBox->Add(iconPanel, 0, wxEXPAND | wxALL, 10);
+    wxBitmap bitmap = wxBitmap(wxT("/home/freddy/insync/Development/Espanso/Images/icongreensmall.png"), wxBITMAP_TYPE_PNG);
+    if (bitmap.IsOk()) {
+        wxImage image = bitmap.ConvertToImage();
+        image.Rescale(32, 32, wxIMAGE_QUALITY_HIGH);
+        wxBitmap resizedBitmap = wxBitmap(image, -1);
+        iconPanel = new wxStaticBitmap( panel, wxID_ANY, resizedBitmap, wxDefaultPosition, wxSize(32, 32));
+        topBox->Add(iconPanel, 0, wxEXPAND | wxALL, 10);
+    }
 
     int textId = NewControlId();
     searchBar = new wxTextCtrl(panel, textId, "", wxDefaultPosition, wxDefaultSize);
