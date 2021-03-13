@@ -17,6 +17,8 @@
  * along with modulo.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// Mouse dragging mechanism greatly inspired by: https://developpaper.com/wxwidgets-implementing-the-drag-effect-of-titleless-bar-window/
+
 #define _UNICODE
 
 #include "common.h"
@@ -39,7 +41,7 @@ const long DEFAULT_STYLE = wxSTAY_ON_TOP | wxFRAME_TOOL_WINDOW | wxRESIZE_BORDER
 #endif
 #ifdef __LINUX__
 const int SEARCH_BAR_FONT_SIZE = 20;
-const long DEFAULT_STYLE = wxSTAY_ON_TOP | wxFRAME_TOOL_WINDOW;
+const long DEFAULT_STYLE = wxSTAY_ON_TOP | wxFRAME_TOOL_WINDOW | wxBORDER_NONE;
 #endif
 
 const wxColour SELECTION_LIGHT_BG = wxColour(164, 210, 253);
@@ -144,6 +146,16 @@ private:
     void OnQueryChange(wxCommandEvent &event);
     void OnItemClickEvent(wxCommandEvent &event);
     void OnActivate(wxActivateEvent &event);
+
+    // Mouse events
+    void OnMouseCaptureLost(wxMouseCaptureLostEvent &event);
+    void OnMouseLeave(wxMouseEvent &event);
+    void OnMouseMove(wxMouseEvent &event);
+    void OnMouseLUp(wxMouseEvent &event);
+    void OnMouseLDown(wxMouseEvent &event);
+    wxPoint mLastPt;
+
+    // Selection
     void SelectNext();
     void SelectPrevious();
     void Submit();
@@ -179,6 +191,7 @@ SearchFrame::SearchFrame(const wxString &title, const wxPoint &pos, const wxSize
 
     wxBoxSizer *topBox = new wxBoxSizer(wxHORIZONTAL);
 
+    int iconId = NewControlId();
     wxString iconPath = wxString(searchMetadata->iconPath);
     if (wxFileExists(iconPath))
     {
@@ -188,7 +201,7 @@ SearchFrame::SearchFrame(const wxString &title, const wxPoint &pos, const wxSize
             wxImage image = bitmap.ConvertToImage();
             image.Rescale(32, 32, wxIMAGE_QUALITY_HIGH);
             wxBitmap resizedBitmap = wxBitmap(image, -1);
-            iconPanel = new wxStaticBitmap(panel, wxID_ANY, resizedBitmap, wxDefaultPosition, wxSize(32, 32));
+            iconPanel = new wxStaticBitmap(panel, iconId, resizedBitmap, wxDefaultPosition, wxSize(32, 32));
             topBox->Add(iconPanel, 0, wxEXPAND | wxLEFT | wxUP | wxDOWN, 10);
         }
     }
@@ -211,6 +224,17 @@ SearchFrame::SearchFrame(const wxString &title, const wxPoint &pos, const wxSize
     Bind(wxEVT_TEXT, &SearchFrame::OnQueryChange, this, textId);
     Bind(wxEVT_LISTBOX_DCLICK, &SearchFrame::OnItemClickEvent, this, resultId);
     Bind(wxEVT_ACTIVATE, &SearchFrame::OnActivate, this, wxID_ANY);
+
+    // Events to handle the mouse drag
+    if (iconPanel) {
+        iconPanel->Bind(wxEVT_LEFT_UP, &SearchFrame::OnMouseLUp, this);
+        iconPanel->Bind(wxEVT_LEFT_DOWN, &SearchFrame::OnMouseLDown, this);
+        Bind(wxEVT_MOTION, &SearchFrame::OnMouseMove, this);
+        Bind(wxEVT_LEFT_UP, &SearchFrame::OnMouseLUp, this);
+        Bind(wxEVT_LEFT_DOWN, &SearchFrame::OnMouseLDown, this);
+        Bind(wxEVT_MOUSE_CAPTURE_LOST, &SearchFrame::OnMouseCaptureLost, this);
+        Bind(wxEVT_LEAVE_WINDOW, &SearchFrame::OnMouseLeave, this);
+    }
 
     this->SetClientSize(panel->GetBestSize());
     this->CentreOnScreen();
@@ -286,6 +310,62 @@ void SearchFrame::OnActivate(wxActivateEvent &event)
         Close(true);
     }
     event.Skip();
+}
+
+void SearchFrame::OnMouseMove(wxMouseEvent &event)
+{
+    if (event.LeftIsDown() && event.Dragging())
+    {
+        wxPoint pt = event.GetPosition();
+        wxPoint wndLeftTopPt = GetPosition();
+        int distanceX = pt.x - mLastPt.x;
+        int distanceY = pt.y - mLastPt.y;
+
+        wxPoint desPt;
+        desPt.x = distanceX + wndLeftTopPt.x - 24;
+        desPt.y = distanceY + wndLeftTopPt.y - 24;
+        this->Move(desPt);
+    }
+
+    if (event.LeftDown())
+    {
+        this->CaptureMouse();
+        mLastPt = event.GetPosition();
+    }
+}
+
+void SearchFrame::OnMouseLeave(wxMouseEvent &event)
+{
+    if (event.LeftIsDown() && event.Dragging())
+    {
+        wxPoint pt = event.GetPosition();
+        wxPoint wndLeftTopPt = GetPosition();
+        int distanceX = pt.x - mLastPt.x;
+        int distanceY = pt.y - mLastPt.y;
+
+        wxPoint desPt;
+        desPt.x = distanceX + wndLeftTopPt.x - 24;
+        desPt.y = distanceY + wndLeftTopPt.y - 24;
+        this->Move(desPt);
+    }
+}
+
+void SearchFrame::OnMouseLDown(wxMouseEvent &event)
+{
+    if (!HasCapture())
+        this->CaptureMouse();
+}
+
+void SearchFrame::OnMouseLUp(wxMouseEvent &event)
+{
+    if (HasCapture())
+        ReleaseMouse();
+}
+
+void SearchFrame::OnMouseCaptureLost(wxMouseCaptureLostEvent &event)
+{
+    if (HasCapture())
+        ReleaseMouse();
 }
 
 void SearchFrame::SetItems(SearchItem *items, int itemSize)
