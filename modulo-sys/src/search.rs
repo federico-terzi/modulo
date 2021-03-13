@@ -1,5 +1,23 @@
-use std::collections::HashMap;
-use std::ffi::{CStr, CString};
+/*
+ * This file is part of modulo.
+ *
+ * Copyright (C) 2020-2021 Federico Terzi
+ *
+ * modulo is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * modulo is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with modulo.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+use std::ffi::{CStr};
 use std::os::raw::{c_char, c_int, c_void};
 
 pub mod types {
@@ -7,7 +25,7 @@ pub mod types {
     pub struct SearchItem {
         pub id: String,
         pub label: String,
-        //TODO pub search_text: String,
+        pub trigger: Option<String>,
     }
 
     #[derive(Debug)]
@@ -24,8 +42,6 @@ mod interop {
     use crate::interop::*;
     use crate::Interoperable;
     use std::ffi::{c_void, CString};
-    use std::os::raw::{c_char, c_int};
-    use std::ptr::null;
 
     pub(crate) struct OwnedSearch {
         title: CString,
@@ -84,6 +100,7 @@ mod interop {
     pub(crate) struct OwnedSearchItem {
         id: CString,
         label: CString,
+        trigger: CString,
     }
 
     impl OwnedSearchItem {
@@ -91,6 +108,7 @@ mod interop {
             SearchItem {
                 id: self.id.as_ptr(),
                 label: self.label.as_ptr(),
+                trigger: self.trigger.as_ptr(),
             }
         }
     }
@@ -101,7 +119,14 @@ mod interop {
             let label =
                 CString::new(item.label.clone()).expect("unable to convert item label to CString");
 
-            Self { id, label }
+            let trigger = if let Some(trigger) = item.trigger.as_deref() {
+                CString::new(trigger.to_string())
+                    .expect("unable to convert item trigger to CString")
+            } else {
+                CString::new("".to_string()).expect("unable to convert item trigger to CString")
+            };
+
+            Self { id, label, trigger }
         }
     }
 }
@@ -109,12 +134,12 @@ mod interop {
 struct SearchData {
     owned_search: interop::OwnedSearch,
     items: Vec<types::SearchItem>,
-    algorithm: Box<dyn Fn(&str, &Vec<types::SearchItem>) -> Vec<usize>>,
+    algorithm: Box<dyn Fn(&str, &[types::SearchItem]) -> Vec<usize>>,
 }
 
 pub fn show(
     search: types::Search,
-    algorithm: Box<dyn Fn(&str, &Vec<types::SearchItem>) -> Vec<usize>>,
+    algorithm: Box<dyn Fn(&str, &[types::SearchItem]) -> Vec<usize>>,
 ) -> Option<String> {
     use crate::interop::SearchMetadata;
     use crate::Interoperable;
