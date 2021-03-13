@@ -1,3 +1,22 @@
+/*
+ * This file is part of modulo.
+ *
+ * Copyright (C) 2020-2021 Federico Terzi
+ *
+ * modulo is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * modulo is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with modulo.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 use crate::interop::*;
 use std::collections::HashMap;
 use std::ffi::CStr;
@@ -336,7 +355,7 @@ mod interop {
 
 pub fn show(form: types::Form) -> HashMap<String, String> {
     use crate::Interoperable;
-    use std::os::raw::{c_char, c_void};
+    use std::os::raw::{c_void};
 
     let owned_form: interop::OwnedForm = form.into();
     let metadata: *const FormMetadata = owned_form.as_ptr() as *const FormMetadata;

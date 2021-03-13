@@ -1,5 +1,23 @@
-use std::collections::HashMap;
-use std::ffi::{CStr, CString};
+/*
+ * This file is part of modulo.
+ *
+ * Copyright (C) 2020-2021 Federico Terzi
+ *
+ * modulo is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * modulo is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with modulo.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+use std::ffi::{CStr};
 use std::os::raw::{c_char, c_int, c_void};
 
 pub mod types {
@@ -24,8 +42,6 @@ mod interop {
     use crate::interop::*;
     use crate::Interoperable;
     use std::ffi::{c_void, CString};
-    use std::os::raw::{c_char, c_int};
-    use std::ptr::null;
 
     pub(crate) struct OwnedSearch {
         title: CString,
@@ -104,7 +120,8 @@ mod interop {
                 CString::new(item.label.clone()).expect("unable to convert item label to CString");
 
             let trigger = if let Some(trigger) = item.trigger.as_deref() {
-                CString::new(trigger.to_string()).expect("unable to convert item trigger to CString")
+                CString::new(trigger.to_string())
+                    .expect("unable to convert item trigger to CString")
             } else {
                 CString::new("".to_string()).expect("unable to convert item trigger to CString")
             };
