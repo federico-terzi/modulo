@@ -7,7 +7,7 @@ pub mod types {
     pub struct SearchItem {
         pub id: String,
         pub label: String,
-        //TODO pub search_text: String,
+        pub trigger: Option<String>,
     }
 
     #[derive(Debug)]
@@ -84,6 +84,7 @@ mod interop {
     pub(crate) struct OwnedSearchItem {
         id: CString,
         label: CString,
+        trigger: CString,
     }
 
     impl OwnedSearchItem {
@@ -91,6 +92,7 @@ mod interop {
             SearchItem {
                 id: self.id.as_ptr(),
                 label: self.label.as_ptr(),
+                trigger: self.trigger.as_ptr(),
             }
         }
     }
@@ -101,7 +103,13 @@ mod interop {
             let label =
                 CString::new(item.label.clone()).expect("unable to convert item label to CString");
 
-            Self { id, label }
+            let trigger = if let Some(trigger) = item.trigger.as_deref() {
+                CString::new(trigger.to_string()).expect("unable to convert item trigger to CString")
+            } else {
+                CString::new("".to_string()).expect("unable to convert item trigger to CString")
+            };
+
+            Self { id, label, trigger }
         }
     }
 }
@@ -109,12 +117,12 @@ mod interop {
 struct SearchData {
     owned_search: interop::OwnedSearch,
     items: Vec<types::SearchItem>,
-    algorithm: Box<dyn Fn(&str, &Vec<types::SearchItem>) -> Vec<usize>>,
+    algorithm: Box<dyn Fn(&str, &[types::SearchItem]) -> Vec<usize>>,
 }
 
 pub fn show(
     search: types::Search,
-    algorithm: Box<dyn Fn(&str, &Vec<types::SearchItem>) -> Vec<usize>>,
+    algorithm: Box<dyn Fn(&str, &[types::SearchItem]) -> Vec<usize>>,
 ) -> Option<String> {
     use crate::interop::SearchMetadata;
     use crate::Interoperable;

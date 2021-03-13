@@ -71,8 +71,7 @@ fn form_main(matches: &ArgMatches) {
             .expect("unable to obtain input from stdin");
         buffer
     } else {
-        let data = std::fs::read_to_string(input_file).expect("unable to read input file");
-        data
+        std::fs::read_to_string(input_file).expect("unable to read input file")
     };
 
     let config: form::config::FormConfig = if !as_json {
@@ -102,8 +101,7 @@ fn search_main(matches: &ArgMatches) {
             .expect("unable to obtain input from stdin");
         buffer
     } else {
-        let data = std::fs::read_to_string(input_file).expect("unable to read input file");
-        data
+        std::fs::read_to_string(input_file).expect("unable to read input file")
     };
 
     let config: search::config::SearchConfig = if !as_json {

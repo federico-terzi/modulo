@@ -1,4 +1,4 @@
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 
 fn default_title() -> String {
     "modulo".to_owned()
@@ -35,4 +35,5 @@ pub struct SearchConfig {
 pub struct SearchItem {
     pub id: String,
     pub label: String,
+    pub trigger: Option<String>,
 }

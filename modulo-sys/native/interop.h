@@ -57,6 +57,7 @@ typedef struct ValuePair {
 typedef struct SearchItem {
   const char *id;
   const char *label;
+  const char *trigger;
 } SearchItem;
 
 typedef struct SearchResults {

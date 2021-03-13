@@ -41,7 +41,6 @@ fn create_field(token: &Token, field_map: &HashMap<String, FieldConfig>) -> Fiel
             Field {
                 id: Some(name.clone()),
                 field_type,
-                ..Default::default()
             }
         }
     }

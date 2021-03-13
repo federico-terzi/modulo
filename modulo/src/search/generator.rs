@@ -8,6 +8,7 @@ pub fn generate(config: SearchConfig) -> types::Search {
         .map(|item| types::SearchItem {
             id: item.id,
             label: item.label,
+            trigger: item.trigger,
         })
         .collect();
 

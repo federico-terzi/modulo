@@ -12,7 +12,7 @@ impl<'r, 't> SplitCaptures<'r, 't> {
     pub fn new(re: &'r Regex, text: &'t str) -> SplitCaptures<'r, 't> {
         SplitCaptures {
             finder: re.captures_iter(text),
-            text: text,
+            text,
             last: 0,
             caps: None,
         }
