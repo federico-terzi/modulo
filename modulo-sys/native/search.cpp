@@ -192,17 +192,21 @@ SearchFrame::SearchFrame(const wxString &title, const wxPoint &pos, const wxSize
     wxBoxSizer *topBox = new wxBoxSizer(wxHORIZONTAL);
 
     int iconId = NewControlId();
-    wxString iconPath = wxString(searchMetadata->iconPath);
-    if (wxFileExists(iconPath))
+    iconPanel = nullptr;
+    if (searchMetadata->iconPath)
     {
-        wxBitmap bitmap = wxBitmap(iconPath, wxBITMAP_TYPE_PNG);
-        if (bitmap.IsOk())
+        wxString iconPath = wxString(searchMetadata->iconPath);
+        if (wxFileExists(iconPath))
         {
-            wxImage image = bitmap.ConvertToImage();
-            image.Rescale(32, 32, wxIMAGE_QUALITY_HIGH);
-            wxBitmap resizedBitmap = wxBitmap(image, -1);
-            iconPanel = new wxStaticBitmap(panel, iconId, resizedBitmap, wxDefaultPosition, wxSize(32, 32));
-            topBox->Add(iconPanel, 0, wxEXPAND | wxLEFT | wxUP | wxDOWN, 10);
+            wxBitmap bitmap = wxBitmap(iconPath, wxBITMAP_TYPE_PNG);
+            if (bitmap.IsOk())
+            {
+                wxImage image = bitmap.ConvertToImage();
+                image.Rescale(32, 32, wxIMAGE_QUALITY_HIGH);
+                wxBitmap resizedBitmap = wxBitmap(image, -1);
+                iconPanel = new wxStaticBitmap(panel, iconId, resizedBitmap, wxDefaultPosition, wxSize(32, 32));
+                topBox->Add(iconPanel, 0, wxEXPAND | wxLEFT | wxUP | wxDOWN, 10);
+            }
         }
     }
 
@@ -226,7 +230,8 @@ SearchFrame::SearchFrame(const wxString &title, const wxPoint &pos, const wxSize
     Bind(wxEVT_ACTIVATE, &SearchFrame::OnActivate, this, wxID_ANY);
 
     // Events to handle the mouse drag
-    if (iconPanel) {
+    if (iconPanel)
+    {
         iconPanel->Bind(wxEVT_LEFT_UP, &SearchFrame::OnMouseLUp, this);
         iconPanel->Bind(wxEVT_LEFT_DOWN, &SearchFrame::OnMouseLDown, this);
         Bind(wxEVT_MOTION, &SearchFrame::OnMouseMove, this);
