@@ -24,14 +24,11 @@ use std::path::{Path, PathBuf};
 // Go to %WXWIN%/build/msw
 // nmake /f makefile.vc BUILD=release TARGET_CPU=X64
 
-// Then install bindgen dependencies:
-// https://rust-lang.github.io/rust-bindgen/requirements.html
-
 #[cfg(target_os = "windows")]
 fn build_native() {
-    let wx_location = std::env::var("WXWIN").expect("unable to find wxWidgets directory, please add a WXWIN env variable with the absolute path");
-    let wx_path = PathBuf::from(&wx_location);
-    println!("{}", wx_location);
+    let modulo_sys_location = std::env::var("CARGO_MANIFEST_DIR").expect("missing CARGO_MANIFEST_DIR env variable");
+    let wx_path = PathBuf::from(&modulo_sys_location).parent().unwrap().join("vendor").join("wxWidgets");
+    eprintln!("{:?}", wx_path);
     if !wx_path.is_dir() {
         panic!("The given WXWIN directory is not valid");
     }

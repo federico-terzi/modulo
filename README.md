@@ -41,9 +41,34 @@ While you can simply download it in your favourite location, if you use modulo a
 
 #### Compile from source
 
-To compile modulo on Windows, you need a recend Rust compiler, the MSVC C++ compiler and the LLVM compiler.
+To compile modulo on Windows, you need a recent Rust compiler and the MSVC C++ compiler.
 
-TODO
+After cloning the repository, pull the submodules with:
+
+```
+git submodule init
+git submodule --init --recursive --depth 1
+```
+
+Then install `cargo make` with:
+
+```
+cargo install --force cargo-make
+```
+
+Then compile wxWidgets with the following command (it will take a few minutes, be patient):
+
+```
+cargo make build-wxwidgets
+```
+
+Then you are ready to build modulo with
+
+```
+cargo build --release
+```
+
+You will find the output binary in `target/release/modulo.exe`
 
 ### macOS
 
