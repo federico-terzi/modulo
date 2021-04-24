@@ -17,10 +17,88 @@
  * along with modulo.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#![allow(non_upper_case_globals)]
-#![allow(non_camel_case_types)]
-#![allow(non_snake_case)]
-include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+pub const FieldType_ROW: FieldType = 0;
+pub const FieldType_LABEL: FieldType = 1;
+pub const FieldType_TEXT: FieldType = 2;
+pub const FieldType_CHOICE: FieldType = 3;
+pub const FieldType_CHECKBOX: FieldType = 4;
+pub type FieldType = i32;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct LabelMetadata {
+    pub text: *const ::std::os::raw::c_char,
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct TextMetadata {
+    pub defaultText: *const ::std::os::raw::c_char,
+    pub multiline: ::std::os::raw::c_int,
+}
+
+pub const ChoiceType_DROPDOWN: ChoiceType = 0;
+pub const ChoiceType_LIST: ChoiceType = 1;
+pub type ChoiceType = i32;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct ChoiceMetadata {
+    pub values: *const *const ::std::os::raw::c_char,
+    pub valueSize: ::std::os::raw::c_int,
+    pub defaultValue: *const ::std::os::raw::c_char,
+    pub choiceType: ChoiceType,
+}
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct FieldMetadata {
+    pub id: *const ::std::os::raw::c_char,
+    pub fieldType: FieldType,
+    pub specific: *const ::std::os::raw::c_void,
+}
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct RowMetadata {
+    pub fields: *const FieldMetadata,
+    pub fieldSize: ::std::os::raw::c_int,
+}
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct FormMetadata {
+    pub windowTitle: *const ::std::os::raw::c_char,
+    pub iconPath: *const ::std::os::raw::c_char,
+    pub fields: *const FieldMetadata,
+    pub fieldSize: ::std::os::raw::c_int,
+}
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct ValuePair {
+    pub id: *const ::std::os::raw::c_char,
+    pub value: *const ::std::os::raw::c_char,
+}
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct SearchItem {
+    pub id: *const ::std::os::raw::c_char,
+    pub label: *const ::std::os::raw::c_char,
+    pub trigger: *const ::std::os::raw::c_char,
+}
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct SearchResults {
+    pub items: *const SearchItem,
+    pub itemSize: ::std::os::raw::c_int,
+}
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct SearchMetadata {
+    pub windowTitle: *const ::std::os::raw::c_char,
+    pub iconPath: *const ::std::os::raw::c_char,
+}
 
 use std::os::raw::{c_char, c_int, c_void};
 

@@ -130,6 +130,7 @@ fn build_native() {
     }
 }
 
+#[cfg(not(target_os = "windows"))]
 fn get_cpp_flags(wx_config_path: &Path) -> Vec<String> {
     let config_output = std::process::Command::new(&wx_config_path)
         .arg("--cxxflags")
@@ -150,6 +151,7 @@ fn get_cpp_flags(wx_config_path: &Path) -> Vec<String> {
     cpp_flags
 }
 
+#[cfg(not(target_os = "windows"))]
 fn generate_linker_flags(wx_config_path: &Path) {
     let config_output = std::process::Command::new(&wx_config_path)
         .arg("--libs")
@@ -257,23 +259,7 @@ fn build_native() {
     generate_linker_flags(&config_path);
 }
 
-fn generate_bindings() {
-    let bindings = bindgen::Builder::default()
-        .header("native/interop.h")
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
-        .generate()
-        .expect("unable to generate bindings");
-
-    let out_path = PathBuf::from(std::env::var("OUT_DIR").unwrap());
-    bindings
-        .write_to_file(out_path.join("bindings.rs"))
-        .expect("unable to write bindings");
-}
-
 fn main() {
-    // Generate the Rust bindings
-    generate_bindings();
-
     // TODO: might need to add rerun if changed: https://doc.rust-lang.org/cargo/reference/build-scripts.html#cargorerun-if-changedpath
 
     build_native();
