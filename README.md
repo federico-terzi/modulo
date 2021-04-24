@@ -47,7 +47,7 @@ After cloning the repository, pull the submodules with:
 
 ```
 git submodule init
-git submodule --init --recursive --depth 1
+git submodule update --init --recursive --depth 1
 ```
 
 Then install `cargo make` with:
