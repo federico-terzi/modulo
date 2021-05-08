@@ -16,3 +16,5 @@ dist/
 /target
 
 .vscode/
+
+vendor/build-wxWidgets

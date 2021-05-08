@@ -42,11 +42,11 @@ fn main() {
 condition={ platforms = ["mac"]}
 script_runner = "@shell"
 script = '''
-cd vendor/wxWidgets
-mkdir -p build-cocoa
-cd build-cocoa
-../configure --disable-shared --enable-macosx_arch=x86_64
-make -j4
+cd vendor
+mkdir -p build-wxWidgets 
+cd build-wxWidgets
+../wxWidgets/configure --disable-shared --enable-macosx_arch=x86_64
+make -j8
 '''
 
 [tasks.build-wxwidgets]

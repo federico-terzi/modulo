@@ -75,13 +75,14 @@ fn build_native() {
     if !wx_path.is_dir() {
         panic!("The given WXMAC directory is not valid");
     }
+    let wx_path = wx_path.parent().unwrap().join("build-wxWidgets");
 
     // Make sure wxWidgets is compiled
-    if !wx_path.join("build-cocoa").is_dir() {
-        panic!("wxWidgets is not compiled correctly, missing 'build-cocoa/' directory")
+    if !wx_path.is_dir() {
+        panic!("wxWidgets is not compiled correctly, missing 'build-wxWidgets/' directory")
     }
 
-    let config_path = wx_path.join("build-cocoa").join("wx-config");
+    let config_path = wx_path.join("wx-config");
     let cpp_flags = get_cpp_flags(&config_path);
 
     let mut build = cc::Build::new();
