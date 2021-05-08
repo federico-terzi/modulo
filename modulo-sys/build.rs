@@ -20,9 +20,6 @@
 use regex::Regex;
 use std::path::{Path, PathBuf};
 
-// TODO: add documentation for windows compile
-// Go to %WXWIN%/build/msw
-// nmake /f makefile.vc BUILD=release TARGET_CPU=X64
 
 #[cfg(target_os = "windows")]
 fn build_native() {
@@ -70,22 +67,11 @@ fn build_native() {
     );
 }
 
-// TODO: add documentation for macos
-// Install LLVM:
-// brew install llvm
-// Compile wxWidgets:
-// mkdir build-cocoa
-// cd build-cocoa
-// ../configure --disable-shared --enable-macosx_arch=x86_64
-// make -j6
-//
-// Run
-// WXMAC=/Users/freddy/wxWidgets cargo run
+
 #[cfg(target_os = "macos")]
 fn build_native() {
-    let wx_location = std::env::var("WXMAC").expect("unable to find wxWidgets directory, please add a WXMAC env variable with the absolute path");
-    let wx_path = PathBuf::from(&wx_location);
-    println!("{}", wx_location);
+    let modulo_sys_location = std::env::var("CARGO_MANIFEST_DIR").expect("missing CARGO_MANIFEST_DIR env variable");
+    let wx_path = PathBuf::from(&modulo_sys_location).parent().unwrap().join("vendor").join("wxWidgets");
     if !wx_path.is_dir() {
         panic!("The given WXMAC directory is not valid");
     }

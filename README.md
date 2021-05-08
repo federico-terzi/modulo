@@ -87,24 +87,34 @@ While you can simply download it in your favourite location, if you use modulo a
 
 #### Compile from source
 
-Compiling from source on macOS requires a few steps:
+To compile modulo on macOS, you need a recent Rust compiler and XCode build tools.
 
-1. Download the [wxWidgets source archive](https://www.wxwidgets.org/downloads/)
-2. Extract the content of the archive in a known directory, such as `$USER/wxWidgets`.
-3. Open a terminal, cd into the wxWidgets directory and type the follwing commands:
+After cloning the repository, pull the submodules with:
 
 ```
-mkdir build-cocoa
-cd build-cocoa
-../configure --disable-shared --enable-macosx_arch=x86_64
-make -j6
+git submodule init
+git submodule update --init --recursive --depth 1
 ```
 
-4. Install LLVM using Homebrew with: `brew install llvm`
+Then install `cargo make` with:
 
-5. Now open the `modulo` project directory in the Terminal and compile with: `WXMAC=$HOME/wxWidgets cargo build --release`
+```
+cargo install --force cargo-make
+```
 
-6. You will find the compiled binary in the `target/release` directory.
+Then compile wxWidgets with the following command (it will take a few minutes, be patient):
+
+```
+cargo make build-wxwidgets
+```
+
+Then you are ready to build modulo with
+
+```
+cargo build --release
+```
+
+You will find the output binary in `target/release/modulo`
 
 ### Linux
 
