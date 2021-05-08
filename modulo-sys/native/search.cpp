@@ -275,6 +275,8 @@ void SearchFrame::OnCharEvent(wxKeyEvent &event)
                 resultBox->SetSelection(index);
                 Submit();
             }
+        } else {
+            event.Skip();
         }
     }
     else if (event.GetKeyCode() == WXK_DOWN)
