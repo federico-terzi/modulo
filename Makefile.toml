@@ -45,7 +45,10 @@ script = '''
 cd vendor
 mkdir -p build-wxWidgets 
 cd build-wxWidgets
-../wxWidgets/configure --disable-shared --enable-macosx_arch=x86_64
+# TODO: do we need to explicitly specify the arch?
+# ../wxWidgets/configure --disable-shared --enable-macosx_arch=arm64
+# ../wxWidgets/configure --disable-shared --enable-macosx_arch=x86_64
+../wxWidgets/configure --disable-shared
 make -j8
 '''
 
